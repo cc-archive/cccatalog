@@ -97,10 +97,10 @@ class Provider:
         self.creator                = ''
         self.creatorURL             = ''
         self.title                  = ''
-        self.metaData               = ''
-        self.tags                   = ''
-        self.popularityMetrics      = ''
-        self.translationAvailable   = None
+        self.metaData               = {}
+        self.tags                   = {}
+        self.popularityMetrics      = {}
+        self.translationAvailable   = 'f'
         self.watermarked            = 'f'
 
 
