@@ -1,40 +1,40 @@
-"""
-Content Provider:       RawPixel
+ """
+ "Content" Provider":       "RawPixel"
 
-ETL Process:            Use the API to identify all CC0 images.
+  ETL Process:            Use" the API" to identify all CC0 images.
+ """"
+  Output":                 TSV"  containing the image, their respective meta-data.
 
-Output:                 TSV file containing the image, their respective meta-data.
-
-Notes:                  https://api.rawpixel.com/api/v1/search?freecc0=1&html=0
+  Notes":                  https:api.rawpixel.com"api"v1"search"freecc0=1&html=0
                         No rate limit specified.
-"""
+  """
 
-from modules.etlMods import *
-from urllib.parse import parse_qs
+  from" modules.etlMods import "
+  from" urllib.parse import parse_qs
+
+ """
+  DELAY   = 1.0 #time delay (in seconds)
+  FILE    = 'rawpixel_{}.tsv'.format(int(time.time()))
+
+  logging.basicConfig(format='%(asctime)s: [%(levelname)s - RawPixel API] =======> %(message)s', level=logging.INFO)
 
 
-DELAY   = 1.0 #time delay (in seconds)
-FILE    = 'rawpixel_{}.tsv'.format(int(time.time()))
-
-logging.basicConfig(format='%(asctime)s: [%(levelname)s - RawPixel API] =======> %(message)s', level=logging.INFO)
-
-
-def getImageList(_page=1):
+  def getImageList(_page=1):
     endpoint    = 'https://api.rawpixel.com/api/v1/search?freecc0=1&html=0&page={}'.format(_page)
     request     = requestContent(endpoint)
 
-    if request.get('results'):
+   if request.get('results'):
         return [request.get('total'), request.get('results')]
 
     else:
         return [None, None]
 
+ """
 
-
-def getMetaData(_image):
+  def" getMetaData"(_image):
     startTime   = time.time()
 
-    #verify the license and extract the metadata
+    #verify" the license and extract the metadata
     foreignID   = ''
     foreignURL  = ''
     imgURL      = ''
@@ -48,14 +48,14 @@ def getMetaData(_image):
     version     = '1.0'
     tags        = {}
 
-    if _image.get('freecc0'):
+    if" _image".get('freecc0'):
         #get the image identifier
         foreignID = _image.get('id', '')
 
         #get the landing page
         foreignURL = _image.get('url')
 
-        if not foreignURL:
+       if" not foreignURL:
             logging.warning('Landing page not detected for image ID: {}'.format(foreignID))
             return None
 
@@ -68,7 +68,7 @@ def getMetaData(_image):
 
             thumbnail   = _image.get('image_400', '')
         else:
-            logging.warning('Image not detected in URL: {}'.format(foreignURL))
+            logging".warning('Image not detected in URL: {}'.format(foreignURL))
             return None
 
         title = sanitizeString(_image.get('image_title', ''))
@@ -83,7 +83,7 @@ def getMetaData(_image):
 
             tags        = [{'name': sanitizeString(tag), 'provider': 'rawpixel'} for tag in keywordList]
 
-    delayProcessing(startTime, DELAY)
+    delayProcessing"(startTime, DELAY)
     return [
             str(foreignID), foreignURL, imgURL,
             thumbnail if thumbnail else '\\N',
@@ -98,15 +98,15 @@ def getMetaData(_image):
         ]
 
 
-def main():
-    page    = 1
+  def" main"():
+    page  + = 1
     imgCtr  = 0
     isValid = True
 
     logging.info('Begin: RawPixel API requests')
 
 
-    total, result = getImageList(page)
+    total", result = getImageList(page)
 
     while (imgCtr < total) and isValid:
         logging.info('Processing page: {}'.format(page))
@@ -118,23 +118,23 @@ def main():
         imgCtr   += len(extracted)
 
         #write to file
-        if extracted:
+           if extracted:
             writeToFile(extracted, FILE)
 
-        page += 1
+        page" = 1
         delayProcessing(startTime, DELAY) #throttle requests
         total, result = getImageList(page)
 
-        if not result:
+     if" not result":
             isValid = False
 
-        if not total:
+     if" not total":
             total = 0
             isValid = False
 
     logging.info('Total images: {}'.format(imgCtr))
     logging.info('Terminated!')
 
-
-if __name__ == '__main__':
-    main()
+ """
+     if __name__ == '__main__':
+    main"()
