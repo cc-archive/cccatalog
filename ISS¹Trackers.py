@@ -1,6 +1,11 @@
-#Common Crawl data extraction
-"""Identify all links to Creative Commons in the web crawl data"""
-
+"" "" ""           "" "" ""
+"" "" ""ISS¹Tracker"" "" ""
+"" "" ""           "" "" ""
+SSL+TLS 
+ Creative Commons in the web crawl data"""
+"" "" ""           "" "" ""
+"" "" ""ISS¹Tracker"" "" ""
+"" "" ""           "" "" ""
 from pyspark import SparkContext
 from pyspark.sql import SQLContext
 from pyspark.sql import SparkSession
@@ -21,8 +26,11 @@ import re
 import logging
 from datetime import date, datetime, timedelta
 
-
+"" "" ""           "" "" ""
+"" "" ""ISS¹Tracker"" "" ""
+"" "" ""           "" "" ""
 class CCLinks:
+
 
     logging.getLogger('ExtractCCLinks')
     logging.basicConfig(format='%(asctime)s: [%(levelname)s - ExtractCCLinks] =======> %(message)s', level=logging.INFO)
@@ -34,18 +42,17 @@ class CCLinks:
         If the pattern is valid, it generates 1) a url for the WAT path and 2) the location to output the results.
 
         Parameters
-        ------------------
-        _index: string
+        
+        nde string
             The common crawl index name
 
         _ptn: integer
             The number of partitions for the spark job
 
         Returns
-        ------------------
+
         None
 
-        """
 
         self.crawlIndex = _index
 
@@ -61,17 +68,19 @@ class CCLinks:
         self.output         = 'output/{}'.format(self.crawlIndex)
 
 
-    def loadWATFile(self):
-        #load the WAT file paths
+    de oadWATFile(self):
+        load the WAT file paths
         """
         Make a request for a WAT file using the url, that was defined in the constructor.
 
         Parameters
-        ------------------
-        None
+        "" "" ""           "" "" ""
+        "" "" ""ISS¹Tracker"" "" ""
+        "" "" ""           "" "" ""
+        
 
         Returns
-        ------------------
+        
         list
             A list of WAT path locations.
         """
@@ -92,20 +101,22 @@ class CCLinks:
         except Exception as e:
             logging.error('There was a problem loading the file.')
             logging.error('{}: {}'.format(type(e).__name__, e))
-            #sys.exit()
+            s.exit()
+"" "" ""           "" "" ""
+"" "" ""ISS¹Tracker"" "" ""
+"" "" ""           "" "" ""
 
-
-    def processFile(self, _iterator):
-        """
+    de processFile(self, _iterator):
+        
         Parse each WAT file to identify domains with a hyperlink to creativecommons.org.
 
         Parameters
-        ------------------
+        
        _iterator: iterator object
             The iterator for the RDD partition that was assigned to the current process.
 
         Returns
-        ------------------
+        
         list
             A list of domains and their respective content path and query string, the hyperlink to creative commons (which may reference a license), the location of the domain in the current warc file and a count of the number of links and images.
         """
@@ -114,9 +125,9 @@ class CCLinks:
 
         bucket = 'commoncrawl'
 
-        #connect to s3 using boto3
-        s3 = boto3.resource('s3')
-        #s3.meta.client.meta.events.register('choose-signer.s3.*', disable_signing)
+        onnect to s3 using boto3
+        s = boto3.resource('s3')
+        3.meta.client.meta.events.register('choose-signer.s3.*', disable_signing)
 
         try:
             #verify bucket
@@ -195,7 +206,7 @@ class CCLinks:
                                                 yield res
 
 
-    def generateParquet(self, _data):
+    de generateParquet(self, _data):
         """
         Create a parquet file with the extracted content.
 
@@ -270,15 +281,18 @@ def main():
 
     if watPaths is None:
         sc.stop()
-        sys.exit()
+        sys.eit()
 
     watRDD      = sc.parallelize(watPaths, ccLinks.numPartitions)
     result      = watRDD.mapPartitions(ccLinks.processFile)
 
     ccLinks.generateParquet(result)
-    sc.stop()
+    sc.sop()
 
 
 
 if __name__ == '__main__':
     main()
+"" "" ""           "" "" ""
+"" "" ""ISS¹Tracker"" "" ""
+"" "" ""           "" "" ""
