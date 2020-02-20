@@ -45,7 +45,7 @@ def main(time):
     condition = True
     offset = 0
     while condition:
-        endpoint = 'https://openaccess-api.clevelandart.org/api/artworks/?cco=1&skip={0}&limit={1}&indent=1&has_image=1'.format(offset, LIMIT)
+        endpoint = 'https://openaccess-api.clevelandart.org/api/artworks/?cc0=1&skip={0}&limit={1}&indent=1&has_image=1'.format(offset, LIMIT)
         response = _get_response_json(query_params, endpoint)
         if response is not None and ('data' in response):
             batch = response['data']
