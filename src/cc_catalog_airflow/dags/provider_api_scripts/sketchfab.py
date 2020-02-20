@@ -81,7 +81,7 @@ def _process_license(
             license_slug,
             cursor=cursor
         )
-        if new_cursor == cursor:
+        if new_cursor == cursor or new_cursor is None:
             break
         else:
             cursor = new_cursor
@@ -103,7 +103,7 @@ def _get_search_result_list(
         response = delayed_requester.get(endpoint, params=query_param_dict)
     logger.debug('response.status_code: {response.status_code}')
     result_list, new_cursor = _extract_result_list_from_response(response)
-    if result_list is None or new_cursor is None:
+    if result_list is None:
         result_list, new_cursor = _get_search_result_list(
             license_slug,
             cursor,
