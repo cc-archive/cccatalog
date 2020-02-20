@@ -210,3 +210,7 @@ def _get_metadata_dict(result):
 
 def _get_raw_tags(result):
     return [t.get('name') for t in result.get('tags', [])]
+
+
+if __name__ == '__main__':
+    main()
