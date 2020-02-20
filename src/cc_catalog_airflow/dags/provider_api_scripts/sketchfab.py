@@ -23,7 +23,7 @@ logging.basicConfig(
 
 logger = logging.getLogger(__name__)
 
-DELAY = 1.0
+DELAY = 5.0
 LIMIT = 24  # This appears to be the max results per request allowed
 MAX_TAG_STRING_LENGTH = 2000
 MAX_DESCRIPTION_LENGTH = 2000
