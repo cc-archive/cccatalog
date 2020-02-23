@@ -1,15 +1,16 @@
 import argparse
 from datetime import datetime, timedelta, timezone
 import logging
-import common.requester as requester
-import common.storage.image as image_class
 import os
 import requests
+import common.requester as requester
+import common.storage.image as image_class
 import json  # It's temporary make sure to remove it.
 LIMIT = 500   # It sets the limit to how many images we want to pull at a time
 DELAY = 5.0   # Time Delay between consecutive API requests(in seconds)
 MEAN_GLOBAL_USAGE_LIMIT = 1000
 PROVIDER = 'Cleveland Museum of Art'
+
 
 logging.basicConfig(
     format='%(asctime)s - %(name)s - %(levelname)s:  %(message)s',
@@ -56,7 +57,7 @@ def main(time):
             logger.info(f'No more images to process so exiting the loop')
             condition = False
     total_images = image_store.commit()
-    logger.info(f'Total number of images recieved {total_images}')
+    logger.info(f'Total number of images received {total_images}')
 
 
 
