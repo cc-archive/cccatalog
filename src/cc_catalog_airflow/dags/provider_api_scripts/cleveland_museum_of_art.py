@@ -39,7 +39,6 @@ def main():
         response = _get_response_json(query_params)
         if (response is not None and ('data' in response and int(len(response['data']) > 0))):
             batch = response['data']
-            print("The type is {}".format(type(batch)))
             images_till_now = _handle_the_response(batch)
             logger.info(f'Total Images till now {images_till_now}')
             offset = offset + LIMIT
@@ -133,9 +132,9 @@ def _handle_the_response(response):
         images_till_now = image_store.add_item(
             foreign_landing_url=foreign_url,  # Foreign Landing URl
             image_url=image_url,  # Image URL
-            license=license_status,  # License
+            license_=license_status,  # License
             license_version="1.0",  # License_Version
-            foregin_identifier=foreign_id,  # Foreign Identifier
+            foreign_identifier=foreign_id,  # Foreign Identifier
             width=width,  # Width of the image
             height=height,  # height of the image
             creator=creator_name,  # Creator Name
