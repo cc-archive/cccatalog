@@ -1,8 +1,5 @@
 import argparse
 import logging
-import os
-import requests
-from datetime import datetime, timedelta, timezone
 import common.requester as requester
 import common.storage.image as image_class
 LIMIT = 500   # It sets the limit to how many images we want to pull at a time
@@ -21,7 +18,7 @@ logger = logging.getLogger(__name__)
 DEFAULT_QUERY_PARAMS = {
     'cc0': '1',
     'has_image': '1',
-    'limit': '500',
+    'limit': LIMIT,
     'skip': '0'
 }
 
@@ -31,13 +28,12 @@ image_store = image_class.ImageStore(provider=PROVIDER)
 
 def main():
     logger.info(f'Starting Cleveland API requets')
-    # start_time = time.time()  # Denotes the starting time of hitting API.
     condition = True
     offset = 0
     while condition:
         query_params = _build_query_params(offset)
         response = _get_response_json(query_params)
-        if (response is not None and ('data' in response and int(len(response['data']) > 0))):
+        if response is not None and response.get('data', []):
             batch = response['data']
             images_till_now = _handle_the_response(batch)
             logger.info(f'Total Images till now {images_till_now}')
@@ -166,7 +162,7 @@ def _create_meta_data(data):
     meta_data['technique'] = data.get('technique', '')
     meta_data['date'] = data.get('date', '')
     meta_data['credit_line'] = data.get('creditline', '')
-    meta_data['classificatoin'] = data.get('type', '')
+    meta_data['classification'] = data.get('type', '')
     meta_data['culture'] = ','.join(
         [i for i in data.get('culture', []) if i is not None]
     )
