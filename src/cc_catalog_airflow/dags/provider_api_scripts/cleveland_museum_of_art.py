@@ -44,7 +44,6 @@ def main():
     logger.info(f'Total number of images received {total_images}')
 
 
-
 def _build_query_params(
     offset
 ):
@@ -96,8 +95,6 @@ def _get_response_json(
         )
 
     return response_json
-
-
 
 
 def _handle_the_response(response):
