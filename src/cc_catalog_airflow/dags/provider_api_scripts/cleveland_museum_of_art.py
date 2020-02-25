@@ -80,8 +80,7 @@ def _get_response_json(
             response_json = None
 
     if (
-            response_json is None
-            or response_json.get('error') is not None
+            response_json is None or response_json.get('error') is not None
     ):
         logger.warning(f'Bad response_json:  {response_json}')
         logger.warning(
@@ -109,15 +108,18 @@ def _handle_the_response(response):
         images_till_now = 0
         if single_image is None:
             continue
-        
+
         image_url, key = _choose_image_version(single_image)
         if image_url is None or key is None:
             continue
         width = single_image[key]['width']
+
         height = single_image[key]['height']
+
         foreign_id = data.get('id', image_url)
+
         license_status = data.get('share_license_status', None).lower()
-        license_share = license_status.lower()
+
         title = data.get('title', '')
 
         creator_info = data.get('creators', {})
