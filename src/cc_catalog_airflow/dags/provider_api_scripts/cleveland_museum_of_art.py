@@ -1,4 +1,3 @@
-import argparse
 import logging
 import common.requester as requester
 import common.storage.image as image_class
