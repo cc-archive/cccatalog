@@ -6,12 +6,8 @@ Notes:                  https://www.thingiverse.com/developers/getting-started
                         All API requests require authentication.
                         Rate limiting is 300 per 5 minute window.
 """
-import argparse
 import logging
 import os
-import lxml.html as html
-from copy import deepcopy
-from urllib.parse import urlparse
 from datetime import datetime, timedelta, timezone
 
 import common.requester as requester
@@ -26,18 +22,16 @@ logger = logging.getLogger(__name__)
 
 LIMIT = 30  # Number of images to pull at a time
 DELAY = 1.0  # Time between each two consecutive requets
-license___ = 'pd0'
 HOST = 'thingiverse.com'
 ENDPOINT = f'https://api.{HOST}/newest'
 PROVIDER = 'thingiverse'
 TOKEN = os.getenv('THINGIVERSE_TOKEN')
-MAX_DESCRIPTION_LENGTH = 2000
 DEFAULT_QUERY_PARAMS = {
     'access_token': TOKEN,
 }
 
 delayed_requester = requester.DelayedRequester(DELAY)
-image_store = image.ImageStore(provider=PROVIDER)
+image_store = image_class.ImageStore(provider=PROVIDER)
 
 
 def main(date):
@@ -103,8 +97,6 @@ def _get_things_batch(start_timestamp, end_timestamp, page=1, retries=5):
 
 
 def _build_query_params(
-        start_date,
-        end_date,
         page=1,
         default_query_params=DEFAULT_QUERY_PARAMS,
         thing=True
@@ -185,8 +177,7 @@ def _validate_license(response_json):
 
 
 def _create_meta_dict(
-    thing_data,
-    max_description_length=MAX_DESCRIPTION_LENGTH
+    thing_data
 ):
     meta_data = {
         'description': thing_data.get('description', ''),
