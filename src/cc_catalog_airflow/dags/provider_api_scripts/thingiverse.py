@@ -223,6 +223,7 @@ def _build_creator_data(thing_data):
 
 def _create_tags_list(thing, endpoint):
     logging.info('Requesting tags for thing: {}'.format(thing))
+    endpoint = endpoint.replace(thing, '{0}/tags'.format(thing))
     tags = _get_response_json({}, endpoint, retries=5)
     tags_list = None
     if tags is not None:
