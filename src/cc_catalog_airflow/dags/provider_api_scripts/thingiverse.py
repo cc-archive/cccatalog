@@ -26,6 +26,8 @@ DELAY = 1.0  # Time between each two consecutive requets
 HOST = 'thingiverse.com'
 ENDPOINT = f'https://api.{HOST}/newest'
 PROVIDER = 'thingiverse'
+LICENSE = 'CC0'
+LICENSE_VERSION = '1.0'
 TOKEN = os.getenv('THINGIVERSE_TOKEN')
 DEFAULT_QUERY_PARAMS = {
     'access_token': TOKEN,
@@ -172,8 +174,8 @@ def _validate_license(response_json):
         license_ = None
         license_version = None
     else:
-        license_ = 'CC0'
-        license_version = '1.0'
+        license_ = LICENSE
+        license_version = LICENSE_VERSION
 
     return license_, license_version
 
