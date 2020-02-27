@@ -40,7 +40,7 @@ def main(date):
     This script pulls the data for a given date from Thingiverse API
     and writes it into a .TSV file to be eventually read
     into our DB.
-    Required Arguments:a
+    Required Arguments:
     date:  Date String in the form YYYY-MM-DD.  This is the date for
            which running the script will pull data.
     """
