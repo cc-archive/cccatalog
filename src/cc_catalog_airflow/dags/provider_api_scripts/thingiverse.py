@@ -1,7 +1,8 @@
 """
 Content Provider:       Thingiverse
 ETL Process:            Use the API to identify all CC0 3D Models.
-Output:                 TSV file containing the 3D models, their respective images and meta-data.
+Output:                 TSV file containing the 3D models
+                        their respective images and meta-data.
 Notes:                  https://www.thingiverse.com/developers/getting-started
                         All API requests require authentication.
                         Rate limiting is 300 per 5 minute window.
@@ -36,7 +37,8 @@ image_store = image_class.ImageStore(provider=PROVIDER)
 
 def main(date):
     """
-    This script pulls the data for a given date from Thingiverse API, and writes it into a .TSV file to be eventually read
+    This script pulls the data for a given date from Thingiverse API
+    and writes it into a .TSV file to be eventually read
     into our DB.
     Required Arguments:a
     date:  Date String in the form YYYY-MM-DD.  This is the date for
