@@ -206,21 +206,25 @@ def _build_foreign_landing_url(thing_data, thing):
 
 
 def _build_creator_data(thing_data):
-    creator = None
+    creator = ""
     creator_url = None
-    if 'creator' in thing_data:
+    try:
         if ('first_name' in thing_data['creator']) and (
                 'last_name' in thing_data['creator']):
             creator = '{} {}'.format(
                 thing_data['creator']['first_name'],
                 thing_data['creator']['last_name'])
-
+        
         if (creator.strip() == '') and ('name' in thing_data['creator']):
             creator = thing_data['creator']['name']
 
         if 'public_url' in thing_data['creator']:
             creator_url = thing_data['creator']['public_url'].strip()
 
+    except Exception as e:
+            logger.warning(f'Could not find "creator" in "thing_data". \n {e}')
+            creator = None
+        
     return creator, creator_url
 
 
