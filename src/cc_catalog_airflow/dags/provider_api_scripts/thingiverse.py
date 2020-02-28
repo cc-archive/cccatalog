@@ -60,20 +60,23 @@ def main(date):
             end_timestamp,
             cur_page
         )
-        if thing_batch is not None:
-            for thing in thing_batch:
-                total_images = _process_thing(
-                    thing, start_timestamp, end_timestamp)
-                if total_images == 0:
-                    is_valid = False
-                    break
-
+        total_images, is_valid = _process_thing_batch(thing_batch, total_images, start_timestamp, end_timestamp)
         cur_page = cur_page + 1
 
     total_images = image_store.commit()
     logger.info(f'Total images: {total_images}')
     logging.info('Terminated!')
 
+def _process_thing_batch(thing_batch, total_images, start_timestamp, end_timestamp):
+    if thing_batch is not None:
+        for thing in thing_batch:
+            total_images = _process_thing(
+                thing, start_timestamp, end_timestamp)
+            if total_images == 0:
+                is_valid = False
+                break
+    
+    return total_images, is_valid
 
 def _derive_timestamp_pair(date):
     date_obj = datetime.strptime(date, '%Y-%m-%d')
@@ -286,7 +289,7 @@ def _add_image_item(
         title,
         meta_data,
         raw_tags):
-    return image_store._add_item(
+    return image_store.add_item(
         foreign_landing_url=foreign_landing_url,
         image_url=image_url,
         thumbnail_url=thumbnail_url,
