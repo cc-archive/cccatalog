@@ -7,6 +7,8 @@ Notes:                  https://www.thingiverse.com/developers/getting-started
                         All API requests require authentication.
                         Rate limiting is 300 per 5 minute window.
 """
+import copy
+import argparse
 import logging
 import os
 from datetime import datetime, timedelta, timezone
@@ -88,8 +90,6 @@ def _derive_timestamp_pair(date):
 
 def _get_things_batch(start_timestamp, end_timestamp, page=1, retries=5):
     query_params = _build_query_params(
-        start_timestamp,
-        end_timestamp,
         page
     )
     thing_batch = None
@@ -109,11 +109,10 @@ def _build_query_params(
         thing=True
 ):
     query_params = default_query_params.copy()
+    #per_page = LIMIT
+    query_params.update({'per_page': LIMIT})
 
-    per_page = LIMIT
-    query_params.update(per_page)
-
-    query_params.update(page)
+    query_params.update({'page': page})
 
     return query_params
 
@@ -373,3 +372,21 @@ def _process_thing(thing, start_timestamp, end_timestamp):
             meta_data['title'],
             tags_list)
         return total_images
+
+
+if __name__ == '__main__':
+    parser = argparse.ArgumentParser(
+        description='Thingiverse API Job',
+        add_help=True
+    )
+    parser.add_argument(
+        '--date',
+        help='Identify images uploaded on a date (format: YYYY-MM-DD).')
+    args = parser.parse_args()
+    if args.date:
+        date = args.date
+    else:
+        date_obj = datetime.now() - timedelta(days=2)
+        date = datetime.strftime(date_obj, '%Y-%m-%d')
+
+    main(date)
