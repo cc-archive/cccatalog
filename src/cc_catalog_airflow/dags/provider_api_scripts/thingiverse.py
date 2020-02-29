@@ -7,7 +7,6 @@ Notes:                  https://www.thingiverse.com/developers/getting-started
                         All API requests require authentication.
                         Rate limiting is 300 per 5 minute window.
 """
-import copy
 import argparse
 import logging
 import os
@@ -30,7 +29,7 @@ ENDPOINT = f'https://api.{HOST}/newest'
 PROVIDER = 'thingiverse'
 LICENSE = 'CC0'
 LICENSE_VERSION = '1.0'
-TOKEN = os.getenv('THINGIVERSE_TOKEN')
+TOKEN = '32044862bce84c5399505e5c85d40c2a'
 DEFAULT_QUERY_PARAMS = {
     'access_token': TOKEN,
 }
@@ -62,12 +61,14 @@ def main(date):
             end_timestamp,
             cur_page
         )
-        total_images, is_valid = _process_thing_batch(thing_batch, total_images, start_timestamp, end_timestamp)
+        total_images, is_valid = _process_thing_batch(
+            thing_batch, total_images, start_timestamp, end_timestamp)
         cur_page = cur_page + 1
 
     total_images = image_store.commit()
     logger.info(f'Total images: {total_images}')
     logging.info('Terminated!')
+
 
 def _process_thing_batch(thing_batch, total_images, start_timestamp, end_timestamp):
     if thing_batch is not None:
@@ -77,8 +78,9 @@ def _process_thing_batch(thing_batch, total_images, start_timestamp, end_timesta
             if total_images == 0:
                 is_valid = False
                 break
-    
+
     return total_images, is_valid
+
 
 def _derive_timestamp_pair(date):
     date_obj = datetime.strptime(date, '%Y-%m-%d')
@@ -213,7 +215,7 @@ def _build_creator_data(thing_data):
             creator = '{} {}'.format(
                 thing_data['creator']['first_name'],
                 thing_data['creator']['last_name'])
-        
+
         if (creator.strip() == '') and ('name' in thing_data['creator']):
             creator = thing_data['creator']['name']
 
@@ -221,9 +223,9 @@ def _build_creator_data(thing_data):
             creator_url = thing_data['creator']['public_url'].strip()
 
     except Exception as e:
-            logger.warning(f'Could not find "creator" in "thing_data". \n {e}')
-            creator = None
-        
+        logger.warning(f'Could not find "creator" in "thing_data". \n {e}')
+        creator = None
+
     return creator, creator_url
 
 
