@@ -57,8 +57,6 @@ def main(date):
 
     while is_valid:
         thing_batch = _get_things_batch(
-            start_timestamp,
-            end_timestamp,
             cur_page
         )
         total_images, is_valid = _process_thing_batch(
@@ -72,12 +70,14 @@ def main(date):
 
 def _process_thing_batch(thing_batch, total_images, start_timestamp, end_timestamp):
     if thing_batch is not None:
-        for thing in thing_batch:
-            total_images = _process_thing(
-                thing, start_timestamp, end_timestamp)
-            if total_images == 0:
-                is_valid = False
-                break
+        thing_batch = list(thing_batch)
+        batch_total_images = list(filter(None, list(map(lambda thing: _process_thing(
+            str(thing), start_timestamp, end_timestamp), thing_batch))))
+        if '-1' in batch_total_images:
+            is_valid = False
+            batch_total_images.remove('-1')
+        if batch_total_images:
+            total_images += sum(batch_total_images)
 
     return total_images, is_valid
 
@@ -90,7 +90,7 @@ def _derive_timestamp_pair(date):
     return start_timestamp, end_timestamp
 
 
-def _get_things_batch(start_timestamp, end_timestamp, page=1, retries=5):
+def _get_things_batch(page=1, retries=5):
     query_params = _build_query_params(
         page
     )
@@ -122,7 +122,7 @@ def _build_query_params(
 def _get_response_json(
     query_params,
     endpoint=ENDPOINT,
-    retries=0
+    retries=5
 ):
     response_json = None
 
@@ -249,7 +249,7 @@ def _get_image_list_json(thing, endpoint):
     return image_list
 
 
-def _get_image_list_meta_data(image, thing_meta_data):
+def _get_image_meta_data(image, thing_meta_data):
     meta_data = {}
     meta_data['description'] = thing_meta_data['description']
     if ('default_image' in image) and image['default_image']:
@@ -318,14 +318,13 @@ def _get_image_list(
         license_version,
         creator,
         creator_url,
-        title,
         tags_list):
     logging.info('Requesting images for thing: {}'.format(thing))
     total_images = 0
     image_list = _get_image_list_json(thing, endpoint)
     if image_list is not None:
         for image in image_list:
-            meta_data = _get_image_list_meta_data(image, thing_meta_data)
+            meta_data = _get_image_meta_data(image, thing_meta_data)
             foreign_landing_id = str(image['default_image']['id'])
             images = image['default_image']['sizes']
 
@@ -343,7 +342,7 @@ def _get_image_list(
                 license_version,
                 creator,
                 creator_url,
-                title,
+                thing_meta_data["title"],
                 meta_data,
                 tags_list)
 
@@ -371,7 +370,6 @@ def _process_thing(thing, start_timestamp, end_timestamp):
             license_version,
             creator,
             creator_url,
-            meta_data['title'],
             tags_list)
         return total_images
 
