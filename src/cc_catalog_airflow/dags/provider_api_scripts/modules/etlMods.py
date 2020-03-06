@@ -11,7 +11,7 @@ from urllib.parse import urlparse
 
 import requests
 
-PATH = os.environ['OUTPUT_DIR']
+PATH = 'tmp/'
 
 
 def _sanitize_json_values(unknown_input, recursion_limit=100):

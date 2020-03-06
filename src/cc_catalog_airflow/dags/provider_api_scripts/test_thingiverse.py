@@ -3,6 +3,7 @@ import os
 import pytest
 import requests
 import json
+from operator import itemgetter
 from unittest.mock import patch, MagicMock
 
 import thingiverse as tiv
@@ -25,7 +26,7 @@ def _get_resource_json(json_name):
 
 def test_derive_timestamp_pair():
     # Note that the timestamps are derived as if input was in UTC.
-    start_ts, end_ts = tiv._derive_timestamp_pair('2018-01-15')
+    start_ts, end_ts = tiv._derive_timestamp_pair('2020-03-02')
     assert start_ts == '1515974400'
     assert end_ts == '1516060800'
 
@@ -37,7 +38,7 @@ def test_get_response_json_retries_with_none_response():
             return_value=None
     ) as mock_get:
         with pytest.raises(Exception):
-            assert tiv._get_response_json({}, retries=2)
+            assert tiv._get_response_json_list({}, retries=2)
 
     assert mock_get.call_count == 3
 
@@ -52,7 +53,7 @@ def test_get_response_json_retries_with_non_ok():
             return_value=r
     ) as mock_get:
         with pytest.raises(Exception):
-            assert tiv._get_response_json({}, retries=2)
+            assert tiv._get_response_json_list({}, retries=2)
 
     assert mock_get.call_count == 3
 
@@ -67,7 +68,7 @@ def test_get_response_json_retries_with_error_json():
             return_value=r
     ) as mock_get:
         with pytest.raises(Exception):
-            assert tiv._get_response_json({}, retries=2)
+            assert tiv._get_response_json_list({}, retries=2)
 
     assert mock_get.call_count == 3
 
@@ -82,7 +83,7 @@ def test_get_response_json_returns_response_json_when_all_ok():
             'get',
             return_value=r
     ) as mock_get:
-        actual_response_json = tiv._get_response_json({}, retries=2)
+        actual_response_json = tiv._get_response_json_list({}, retries=2)
 
     assert mock_get.call_count == 1
     assert actual_response_json == expect_response_json
@@ -91,7 +92,7 @@ def test_get_response_json_returns_response_json_when_all_ok():
 def test_build_query_params_default():
     actual_query_params = tiv._build_query_params()
     expect_query_params = {
-        'access_token': '32044862bce84c5399505e5c85d40c2a',
+        'access_token': '',
         'per_page': 30,
         'page': 1
     }
@@ -102,7 +103,7 @@ def test_build_query_params_default():
 def test_build_query_params_with_givens():
     actual_query_params = tiv._build_query_params(page=3)
     expect_query_params = {
-        'access_token': '32044862bce84c5399505e5c85d40c2a',
+        'access_token': '',
         'per_page': 30,
         'page': 3
     }
@@ -113,7 +114,7 @@ def test_build_query_params_with_givens():
 def test_build_thing_query_with_givens():
     actual_endpoint, actual_query_params = tiv._build_thing_query(5)
     expect_query_params = {
-        'access_token': '32044862bce84c5399505e5c85d40c2a',
+        'access_token': '',
     }
     expected_endpoint = 'https://api.thingiverse.com/things/5'
 
@@ -127,7 +128,8 @@ def test_validate_license_with_all_ok():
     expected_license = 'CC0'
     expected_license_version = '1.0'
 
-    assert actual_license == expected_license and actual_license_version == expected_license_version
+    assert actual_license == expected_license
+    assert actual_license_version == expected_license_version
 
 
 def test_validate_license_with_license_not_detected():
@@ -135,7 +137,8 @@ def test_validate_license_with_license_not_detected():
     expected_license = None
     expected_license_version = None
 
-    assert actual_license == expected_license and actual_license_version == expected_license_version
+    assert actual_license == expected_license
+    assert actual_license_version == expected_license_version
 
 
 def test_create_meta_dict_with_keys_exist():
@@ -159,18 +162,15 @@ def test_create_meta_dict_with_keys_not_exist():
     assert actual_meta_data == expected_meta_data
 
 
-def test__get_things_batch_all_ok():
+def test_get_things_batch_all_ok():
     expected_thing_batch = _get_resource_json('example_thing_batch.json')
     actual_thing_batch = tiv._get_things_batch(3)
-
     assert actual_thing_batch == expected_thing_batch
 
 
-def test__get_things_batch_none_response():
-    expected_thing_batch = None
+def test_get_things_batch_none_response():
     actual_thing_batch = tiv._get_things_batch(999999)
-
-    assert actual_thing_batch == expected_thing_batch
+    assert len(actual_thing_batch) == 0
 
 
 def test_build_foreign_landing_url():
@@ -198,7 +198,8 @@ def test_build_creator_data():
     expected_creator = "Matt Moses"
     expected_creator_url = "https://www.thingiverse.com/mattmoses"
 
-    assert actual_creator == expected_creator and actual_creator_url == expected_creator_url
+    assert actual_creator == expected_creator
+    assert actual_creator_url == expected_creator_url
 
 
 def test_build_creator_data_no_creator_name():
@@ -207,15 +208,18 @@ def test_build_creator_data_no_creator_name():
     expected_creator = "replicator"
     expected_creator_url = "https://www.thingiverse.com/replicator"
 
-    assert actual_creator == expected_creator and actual_creator_url == expected_creator_url
+    assert actual_creator == expected_creator
+    assert actual_creator_url == expected_creator_url
 
 
 def test_build_creator_data_no_creator():
     actual_creator, actual_creator_url = tiv._build_creator_data({})
-    expected_creator = ''
+    expected_creator = None
     expected_creator_url = None
 
-    assert actual_creator == expected_creator and actual_creator_url == expected_creator_url
+    print(actual_creator)
+    assert actual_creator == expected_creator
+    assert actual_creator_url == expected_creator_url
 
 
 def test_build_creator_data_no_public_url():
@@ -230,46 +234,34 @@ def test_build_creator_data_no_public_url():
 
 def test_create_tags_list_makes_tags_list():
     expected_tags_list = _get_resource_json('example_thing_920_tags.json')
-    expected_tags_list = sorted(list(set(expected_tags_list.split())))
+    expected_tags_list = list(map(lambda tag: {'name': str(
+        tag['name'].strip()), 'provider': 'thingiverse'}, expected_tags_list))
+    expected_tags_list.sort(key=itemgetter('name'))
     actual_tags_list = tiv._create_tags_list(
-        920, 'https://api.thingiverse.com/things/920')
+        str(920), 'https://api.thingiverse.com/things/920')
 
     assert len(actual_tags_list) == len(expected_tags_list)
     assert all(
         [element in actual_tags_list for element in expected_tags_list]
     )
-
-
-def test_create_tags_list_sorts_tags():
-    expected_tags_list = _get_resource_json('example_thing_920_tags.json')
-    actual_tags_list = tiv._create_tags_list(
-        920, 'https://api.thingiverse.com/things/920')
-
-    assert len(actual_tags_list) == len(expected_tags_list)
-    assert all(
-        [element in actual_tags_list for element in expected_tags_list]
-    )
-
-
-def test_get_image_list_json_with_none_response():
-    actual_image_list = tiv._get_image_list_json(
-        0, 'https://api.thingiverse.com/things/0')
-
-    assert not actual_image_list
 
 
 def test_get_image_list_json_with_ok_response():
     actual_image_list = tiv._get_image_list_json(
-        920, 'https://api.thingiverse.com/things/920')
+        str(920), 'https://api.thingiverse.com/things/920')
     expected_image_list = _get_resource_json(
         'example_thing_920_image_list.json')
 
-    assert actual_image_list == expected_image_list
+    print(actual_image_list)
+    assert len(actual_image_list) == len(expected_image_list)
+    assert all(
+        [element in actual_image_list for element in expected_image_list]
+    )
 
 
 def test_get_image_meta_data():
     image_list = _get_resource_json('example_thing_920_image_list.json')
-    description = _get_resource_json('thing_920_decription.json')
+    description = _get_resource_json('thing_920_description.json')
     for image in image_list:
         actual_meta_data = tiv._get_image_meta_data(
             image, description['description'])
@@ -278,17 +270,19 @@ def test_get_image_meta_data():
             '3d_model': "https://thingiverse-beta-new.s3.amazonaws.com/assets/b6/12/ec/6e/a0/syringePump_parts.dxf"
         }
 
+        print(actual_meta_data)
         assert actual_meta_data == expected_meta_data
 
 
 def test_get_image_list():
-    thing_meta_data = _get_resource_json('thing_920_decription.json')
+    thing_meta_data = _get_resource_json('thing_920_description.json')
     meta_data = {
         "description": thing_meta_data["description"],
         "title": thing_meta_data["title"]
     }
+
     actual_total_images = tiv._get_image_list(920, 'https://api.thingiverse.com/things/920', meta_data, "https://www.thingiverse.com/thing:920", 'CC0',
-                                              '1.0', "Matt Moses", "https://api.thingiverse.com/users/mattmoses", sorted(list(set(_get_resource_json("example_thing_920_tags.json").split()))))
+                                              '1.0', "Matt Moses", "https://api.thingiverse.com/users/mattmoses", list(map(lambda tag: {'name': str(tag['name'].strip()), 'provider': 'thingiverse'}, _get_resource_json("example_thing_920_tags.json"))).sort(key=itemgetter('name')))
 
     assert actual_total_images == 9
 
@@ -297,3 +291,27 @@ def test_process_thing():
     actual_total_images = tiv._process_thing(920, '1515974400', '1516060800')
 
     assert actual_total_images == 9
+
+
+def test_get_response_json_list_batch_endpoint():
+    endpoint = 'https://api.thingiverse.com/newest'
+    query_params = {
+        'access_token': '',
+        'per_page': 30,
+        'page': 55
+    }
+    response_json = tiv._get_response_json_list(query_params, endpoint, 5)
+
+    assert response_json == _get_resource_json('test_batch_endpoint.json')
+
+
+def test_get_response_json_list_tags_endpoint():
+    endpoint = 'https://api.thingiverse.com/things/4198944/tags'
+    query_params = {
+        'access_token': ''
+    }
+    response_json = tiv._get_response_json_list(query_params, endpoint, 5)
+    with open('test_tags_endpoint.json', 'w') as outfile:
+        json.dump(response_json, outfile)
+
+    assert response_json == _get_resource_json('test_tags_endpoint.json')
