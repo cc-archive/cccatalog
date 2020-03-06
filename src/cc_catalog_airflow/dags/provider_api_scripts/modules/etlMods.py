@@ -11,7 +11,7 @@ from urllib.parse import urlparse
 
 import requests
 
-PATH = 'tmp/'
+PATH = os.environ['OUTPUT_DIR']
 
 
 def _sanitize_json_values(unknown_input, recursion_limit=100):
@@ -127,14 +127,14 @@ def sanitizeString(_data):
     else:
         _data = str(_data)
 
-    _data       = _data.strip()
-    _data       = _data.replace('"', "'")
-    _data       = re.sub(r'\n|\r', ' ', _data)
+    _data = _data.strip()
+    _data = _data.replace('"', "'")
+    _data = re.sub(r'\n|\r', ' ', _data)
     #_data      = re.escape(_data)
 
-    backspaces  = re.compile('\b+')
-    _data       = backspaces.sub('', _data)
-    _data       = _data.replace('\\', '\\\\')
+    backspaces = re.compile('\b+')
+    _data = backspaces.sub('', _data)
+    _data = _data.replace('\\', '\\\\')
 
     return re.sub(r'\s+', ' ', _data)
 
@@ -142,17 +142,17 @@ def sanitizeString(_data):
 def delayProcessing(_startTime, _maxDelay):
     minDelay = 1.0
 
-    #subtract time elapsed from the requested delay
-    elapsed       = float(time.time()) - float(_startTime)
+    # subtract time elapsed from the requested delay
+    elapsed = float(time.time()) - float(_startTime)
     delayInterval = round(_maxDelay - elapsed, 3)
-    waitTime      = max(minDelay, delayInterval) #time delay between requests.
+    waitTime = max(minDelay, delayInterval)  # time delay between requests.
 
     logging.info('Time delay: {} second(s)'.format(waitTime))
     time.sleep(waitTime)
 
 
 def requestContent(_url, _headers=None):
-    #TODO: pass the request headers and params in a dictionary
+    # TODO: pass the request headers and params in a dictionary
 
     logging.info('Processing request: {}'.format(_url))
 
@@ -162,7 +162,8 @@ def requestContent(_url, _headers=None):
         if response.status_code == requests.codes.ok:
             return response.json()
         else:
-            logging.warning('Unable to request URL: {}. Status code: {}'.format(url, response.status_code))
+            logging.warning('Unable to request URL: {}. Status code: {}'.format(
+                url, response.status_code))
             return None
 
     except Exception as e:
@@ -174,18 +175,20 @@ def requestContent(_url, _headers=None):
 def getLicense(_domain, _path, _url):
 
     if 'creativecommons.org' not in _domain:
-        logging.warning('The license for the following work -> {} is not issued by Creative Commons.'.format(_url))
+        logging.warning(
+            'The license for the following work -> {} is not issued by Creative Commons.'.format(_url))
         return [None, None]
 
-    pattern   = re.compile('/(licenses|publicdomain)/([a-z\-?]+)/(\d\.\d)/?(.*?)')
+    pattern = re.compile(
+        '/(licenses|publicdomain)/([a-z\-?]+)/(\d\.\d)/?(.*?)')
     if pattern.match(_path.lower()):
-        result  = re.search(pattern, _path.lower())
+        result = re.search(pattern, _path.lower())
         license = result.group(2).lower().strip()
         version = result.group(3).strip()
 
         if result.group(1) == 'publicdomain':
             if license == 'zero':
-                license = 'cc0';
+                license = 'cc0'
             elif license == 'mark':
                 license = 'pdm'
             else:
@@ -195,7 +198,6 @@ def getLicense(_domain, _path, _url):
         elif (license == ''):
             logging.warning('License not detected!')
             return [None, None]
-
 
         return [license, version]
 
