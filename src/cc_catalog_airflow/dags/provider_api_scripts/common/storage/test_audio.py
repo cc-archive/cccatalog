@@ -513,7 +513,7 @@ def test_create_tsv_row_handles_empty_dict_and_tags(
     test_audio = audio._Audio(**audio_args)
 
     actual_row = audio_store._create_tsv_row(test_audio).split('\t')
-    actual_meta_data, actual_tags = actual_row[12], actual_row[13]
+    actual_meta_data, actual_tags = actual_row[10], actual_row[11]
     expect_meta_data, expect_tags = '\\N', '\\N'
     assert expect_meta_data == actual_meta_data
     assert expect_tags == actual_tags
@@ -531,7 +531,7 @@ def test_create_tsv_row_turns_empty_into_nullchar(
     assert all(
         [
             actual_row[i] == '\\N'
-            for i in [0, 3, 4, 5, 6, 9, 10, 11, 12, 13, 14, 15]
+            for i in [0, 3, 4, 7, 8, 9, 10, 11, 12]
         ]
     ) is True
     assert actual_row[-1] == '\\N\n'
@@ -553,8 +553,8 @@ def test_create_tsv_row_properly_places_entries(
         'filesize': None,
         'creator': 'tyler',
         'creator_url': 'https://creatorurl.com',
-        'title': 'agreatpicture',
-        'meta_data': {'description': 'cat picture'},
+        'title': 'agreatsound',
+        'meta_data': {'description': 'cat meow'},
         'tags': [{'name': 'tag1', 'provider': 'testing'}],
         'provider': 'testing_provider',
         'source': 'testing_source'
@@ -570,17 +570,14 @@ def test_create_tsv_row_properly_places_entries(
         'https://landing_page.com',
         'http://imageurl.com',
         'http://thumbnail.com',
-        '200',
-        '500',
         '\\N',
         'testlicense',
         '1.0',
         'tyler',
         'https://creatorurl.com',
-        'agreatpicture',
-        '{"description": "cat picture"}',
+        'agreatsound',
+        '{"description": "cat meow"}',
         '[{"name": "tag1", "provider": "testing"}]',
-        'f',
         'testing_provider',
         'testing_source'
     ]) + '\n'
