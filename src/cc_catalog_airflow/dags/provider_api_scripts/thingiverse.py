@@ -24,12 +24,13 @@ logging.basicConfig(
 
 logger = logging.getLogger(__name__)
 
-LIMIT = 30  # Number of images to pull at a time
+PER_PAGE_LIMIT = 30
+IMAGES_LIMIT = 1000
 DELAY = 1.0  # Time between each two consecutive requets
 HOST = 'thingiverse.com'
 ENDPOINT = f'https://api.{HOST}/newest'
 PROVIDER = 'thingiverse'
-LICENSE = 'CC0'
+LICENSE = 'cc0'
 LICENSE_VERSION = '1.0'
 LICENSE_TEXT = 'Creative Commons'
 TOKEN = ''
@@ -54,11 +55,11 @@ def main(date):
 
     start_timestamp, end_timestamp = _derive_timestamp_pair(date)
 
-    cur_page = 55
+    cur_page = 20000
     total_images = 0
     is_valid = True
 
-    while is_valid:
+    while is_valid and total_images < IMAGES_LIMIT:
         thing_batch = _get_things_batch(
             cur_page
         )
@@ -118,7 +119,7 @@ def _build_query_params(
         default_query_params=DEFAULT_QUERY_PARAMS
 ):
     query_params = default_query_params.copy()
-    query_params.update({'per_page': LIMIT})
+    query_params.update({'per_page': PER_PAGE_LIMIT})
     query_params.update({'page': page})
 
     return query_params
@@ -292,9 +293,9 @@ def _get_image_list_json(thing):
 def _get_image_meta_data(image, thing_meta_data):
     meta_data = {}
     meta_data['description'] = thing_meta_data['description']
-    # if ('default_image' in image) and image['default_image']:
-    #     if 'url' in image['default_image']:
-    #         meta_data['3d_model'] = image['default_image']['url']
+    if ('default_image' in image) and image['default_image']:
+        if 'url' in image['default_image']:
+            meta_data['3d_model'] = image['default_image']['url']
 
     return meta_data
 
@@ -349,19 +350,33 @@ def _add_images(image_list,
 
 
 def _process_image_list(image_list, description):
+    print("Hello from image list")
+    print("this is the image list I recieved")
+    print(image_list)
     images_data = []
     for image in image_list:
+        print("Hello from image list loop")
         meta_data = {}
         thumbnail = None
         image_url = None
         foreign_landing_id = None
         meta_data['description'] = description
+        print('DESCRIPTION: ')
+        print(description)
         if ('default_image' in image) and image['default_image']:
             if 'url' in image['default_image']:
                 meta_data['3d_model'] = image['default_image']['url']
                 foreign_landing_id = str(image['default_image']['id'])
                 images = image['default_image']['sizes']
+                print("3d_model:")
+                print(meta_data['3d_model'])
+                print('foreign_landing_id: ')
+                print(foreign_landing_id)
                 thumbnail, image_url = _get_image_url_thumbnail(images)
+                print('thumbnail: ')
+                print(thumbnail)
+                print('image_url: ')
+                print(image_url)
                 if image_url is None:
                     logging.warning('Image Not Detected!')
                     continue
@@ -377,7 +392,10 @@ def _process_image_list(image_list, description):
             else:
                 logging.warning('3D Model Not Detected!')
                 continue
+        else:
+            logging.warning('Not valid image!')
 
+    print(images_data)
     return images_data
 
 
@@ -406,10 +424,16 @@ def _process_thing(thing, start_timestamp, end_timestamp):
                 creator, creator_url = _build_creator_data(response_json)
                 tags_list = _create_tags_list(str(thing))
                 image_list = _get_image_list_json(thing)
+                print("THIS IS THE IMAGE LIST BEFORE PROCESSING")
+                print(image_list)
                 total_images_list = _process_image_list(
                     image_list, meta_data['description'])
+                print("THIS IS IMAGE LIST AFTER PROCCESSING BEFORE ADD ITEM")
+                print(total_images_list)
                 total_images = _add_images(total_images_list, foreign_landing_url, license_,
                                            license_version, creator, creator_url, meta_data['title'], tags_list)
+                print("TOTAL IMAGES AFTER ADD ITEM")
+                print(total_images)
             else:
                 total_images = '-1'
 

@@ -315,3 +315,29 @@ def test_get_response_json_list_tags_endpoint():
         json.dump(response_json, outfile)
 
     assert response_json == _get_resource_json('test_tags_endpoint.json')
+
+
+def test_process_image_list():
+    expected_list = [[
+        '39074',
+        'https://thingiverse-rerender-new.s3.amazonaws.com/renders/44/12/6a/5a/bf/makerbot_chin_rest_display_large.jpg',
+        'https://thingiverse-rerender-new.s3.amazonaws.com/renders/44/12/6a/5a/bf/makerbot_chin_rest_display_medium.jpg',
+        json.dumps({
+            'description': "I didn't want the makerbotters to feel left out.  I watch mine more than I read anymore.  Derived from http://www.thingiverse.com/thing:5410 and http://www.thingiverse.com/thing:4537",
+            '3d_model': 'https://cdn.thingiverse.com/assets/c1/98/eb/67/fd/makerbot_chin_rest.stl'
+        })
+    ]]
+    print(expected_list)
+    json_file = _get_resource_json('test_process_image_list.json')
+    actual_list = tiv._process_image_list(
+        json_file, "I didn't want the makerbotters to feel left out.  I watch mine more than I read anymore.  Derived from http://www.thingiverse.com/thing:5410 and http://www.thingiverse.com/thing:4537")
+    print(actual_list)
+
+    assert len(expected_list) == len(actual_list)
+    assert all(
+        [element in actual_list for element in expected_list]
+    )
+
+
+if __name__ == "__main__":
+    test_process_image_list()
