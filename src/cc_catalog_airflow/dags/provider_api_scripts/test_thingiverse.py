@@ -26,9 +26,8 @@ def _get_resource_json(json_name):
 
 def test_derive_timestamp_pair():
     # Note that the timestamps are derived as if input was in UTC.
-    start_ts, end_ts = tiv._derive_timestamp_pair('2020-03-02')
+    start_ts = tiv._derive_timestamp_pair('2020-03-02')
     assert start_ts == '1515974400'
-    assert end_ts == '1516060800'
 
 
 def test_get_response_json_retries_with_none_response():
@@ -337,7 +336,3 @@ def test_process_image_list():
     assert all(
         [element in actual_list for element in expected_list]
     )
-
-
-if __name__ == "__main__":
-    test_process_image_list()
