@@ -18,11 +18,26 @@ _AUDIO_TSV_COLUMNS = [
     columns.URLColumn(
         name='audio_url',           required=True,  size=3000
     ),
+    columns.StringColumn(
+        name='file_format',         required=False, size=25,   truncate=True
+    ),
     columns.URLColumn(
         name='thumbnail_url',       required=False, size=3000
     ),
     columns.IntegerColumn(
         name='filesize',            required=False
+    ),
+    columns.IntegerColumn(
+        name='duration',            required=False
+    ),
+    columns.IntegerColumn(
+        name='samplerate',          required=False
+    ),
+    columns.IntegerColumn(
+        name='bitdepth',            required=False
+    ),
+    columns.IntegerColumn(
+        name='channels',            required=False
     ),
     columns.StringColumn(
         name='license_',            required=True,  size=50,   truncate=False
@@ -38,6 +53,15 @@ _AUDIO_TSV_COLUMNS = [
     ),
     columns.StringColumn(
         name='title',               required=False, size=5000, truncate=True
+    ),
+    columns.StringColumn(
+        name='album',               required=False, size=5000, truncate=True
+    ),
+    columns.StringColumn(
+        name='genre',               required=False, size=5000, truncate=True
+    ),
+    columns.StringColumn(
+        name='language',            required=False, size=5000, truncate=True
     ),
     columns.JSONColumn(
         name='meta_data',           required=False
@@ -86,7 +110,12 @@ class AudioStore(image.ImageStore):
             self,
             foreign_landing_url=None,
             audio_url=None,
+            file_format=None,
             thumbnail_url=None,
+            duration=None,
+            samplerate=None,
+            bitdepth=None,
+            channels=None,
             license_url=None,
             license_=None,
             license_version=None,
@@ -94,6 +123,9 @@ class AudioStore(image.ImageStore):
             creator=None,
             creator_url=None,
             title=None,
+            album=None,
+            genre=None,
+            language=None,
             meta_data=None,
             raw_tags=None,
             source=None
@@ -123,12 +155,20 @@ class AudioStore(image.ImageStore):
 
         Optional Arguments:
 
+        file_format:         The format of the audio (e.g. mp3, ogg)
         thumbnail_url:       Direct link to image accompanying audio
+        duration:            Audio duration, in seconds.
+        samplerate:          Samplerate of audio, in samples per second.
+        bitdepth:            Bitdepth of audio, in bits.
+        channels:            Number of channels in the audio.
         foreign_identifier:  Unique identifier for the audio on the
                              source site.
         creator:             The creator of the audio.
         creator_url:         The user page, or home page of the creator.
         title:               Title of the audio.
+        album:               Name of album or collection this audio belongs to.
+        genre:               The genre of audio.
+        language:            Primary human language used in the audio.
         meta_data:           Dictionary of meta_data about the audio.
                              Currently, a key that we prefer to have is
                              `description`. If 'license_url' is included
@@ -147,7 +187,12 @@ class AudioStore(image.ImageStore):
         audio = self._get_audio(
                 foreign_landing_url=foreign_landing_url,
                 audio_url=audio_url,
+                file_format=file_format,
                 thumbnail_url=thumbnail_url,
+                duration=duration,
+                samplerate=samplerate,
+                bitdepth=bitdepth,
+                channels=channels,
                 license_url=license_url,
                 license_=license_,
                 license_version=license_version,
@@ -155,6 +200,9 @@ class AudioStore(image.ImageStore):
                 creator=creator,
                 creator_url=creator_url,
                 title=title,
+                album=album,
+                genre=genre,
+                language=language,
                 meta_data=meta_data,
                 raw_tags=raw_tags,
                 source=source
@@ -174,13 +222,21 @@ class AudioStore(image.ImageStore):
             foreign_identifier,
             foreign_landing_url,
             audio_url,
+            file_format,
             thumbnail_url,
+            duration,
+            samplerate,
+            bitdepth,
+            channels,
             license_url,
             license_,
             license_version,
             creator,
             creator_url,
             title,
+            album,
+            genre,
+            language,
             meta_data,
             raw_tags,
             source,
@@ -201,13 +257,21 @@ class AudioStore(image.ImageStore):
                 foreign_identifier=foreign_identifier,
                 foreign_landing_url=foreign_landing_url,
                 audio_url=audio_url,
+                file_format=file_format,
                 thumbnail_url=thumbnail_url,
+                duration=duration,
+                samplerate=samplerate,
+                bitdepth=bitdepth,
+                channels=channels,
                 license_=license_,
                 license_version=license_version,
                 filesize=None,
                 creator=creator,
                 creator_url=creator_url,
                 title=title,
+                album=album,
+                genre=genre,
+                language=language,
                 meta_data=meta_data,
                 tags=tags,
                 provider=self._PROVIDER,
