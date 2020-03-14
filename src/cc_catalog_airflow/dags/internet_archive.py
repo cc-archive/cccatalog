@@ -16,8 +16,8 @@ from datetime import datetime, timedelta, timezone
 import logging
 import os
 from urllib.parse import urlparse
-
-import lxml.html as html
+from multiprocessing import Pool
+from itertools import product
 
 import common.requester as requester
 import common.storage.image as image
@@ -86,21 +86,25 @@ def main(date):
 
 
 def _process_pages(start_timestamp, end_timestamp):
-    page = 1
     total_pages = _get_total_pages(start_timestamp, end_timestamp)
-    for page in range (1,total_pages+1):
-        sounds_for_page = _get_sound_for_page(
-            start_timestamp,
-            end_timestamp,
-            total_pages,
-            page)
+    iterable = []
+    for page_number in range(1, total_pages+1):
+        iterable.append([start_timestamp, end_timestamp, page_number])
+
+    # Multi processing with threads getting output for different pages
+    # simultaneously
+
+    with Pool(processes=4) as pool:
+        sounds_for_all_pages = pool.starmap(_get_sound_for_page, iterable)
+
+    for sounds_for_page in sounds_for_all_pages:
         if sounds_for_page is not None:
             total_sounds = _process_page(sounds_for_page)
             logger.info(f'Total sound processed so far: {total_sounds}')
         else:
             logger.warning('No sound data!  Attempting to continue')
 
-    logger.info(f'Total page processed: {page-1}')
+    logger.info(f'Total page processed: {total_pages}')
     return total_sounds
 
 
@@ -128,7 +132,7 @@ def _get_sound_for_page(
     sounds_for_page = _get_response_json(
         query_params,
         endpoint=ENDPOINT,
-        request_headers=DEFAULT_QUERY_PARAMS,
+        request_headers=DEFAULT_REQUEST_HEADERS,
         retries=retries
     ).get('response')['docs']
 
