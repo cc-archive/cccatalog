@@ -58,6 +58,9 @@ _AUDIO_TSV_COLUMNS = [
         name='album',               required=False, size=5000, truncate=True
     ),
     columns.StringColumn(
+        name='audio_type',          required=False, size=5000, truncate=True
+    ),
+    columns.StringColumn(
         name='genre',               required=False, size=5000, truncate=True
     ),
     columns.StringColumn(
@@ -124,6 +127,7 @@ class AudioStore(image.ImageStore):
             creator_url=None,
             title=None,
             album=None,
+            audio_type=None,
             genre=None,
             language=None,
             meta_data=None,
@@ -167,6 +171,7 @@ class AudioStore(image.ImageStore):
         creator_url:         The user page, or home page of the creator.
         title:               Title of the audio.
         album:               Name of album or collection this audio belongs to.
+        audio_type:          The type of audio (e.g. music, podcast)
         genre:               The genre of audio.
         language:            Primary human language used in the audio.
         meta_data:           Dictionary of meta_data about the audio.
@@ -201,6 +206,7 @@ class AudioStore(image.ImageStore):
                 creator_url=creator_url,
                 title=title,
                 album=album,
+                audio_type=audio_type,
                 genre=genre,
                 language=language,
                 meta_data=meta_data,
@@ -235,6 +241,7 @@ class AudioStore(image.ImageStore):
             creator_url,
             title,
             album,
+            audio_type,
             genre,
             language,
             meta_data,
@@ -270,6 +277,7 @@ class AudioStore(image.ImageStore):
                 creator_url=creator_url,
                 title=title,
                 album=album,
+                audio_type=audio_type,
                 genre=genre,
                 language=language,
                 meta_data=meta_data,

@@ -147,6 +147,7 @@ def test_AudioStore_get_audio_places_given_args(
         'creator_url': 'https://creatorurl.com',
         'title': 'agreatpicture',
         'album': 'analbum',
+        'audio_type': 'sound',
         'genre': 'nature',
         'language': 'English',
         'meta_data': {'description': 'cat meow'},
@@ -217,6 +218,7 @@ def test_AudioStore_get_audio_calls_license_chooser(
         creator_url=None,
         title=None,
         album=None,
+        audio_type=None,
         genre=None,
         language=None,
         meta_data=None,
@@ -253,6 +255,7 @@ def test_AudioStore_get_audio_gets_source(
         creator_url=None,
         title=None,
         album=None,
+        audio_type=None,
         genre=None,
         language=None,
         meta_data=None,
@@ -284,6 +287,7 @@ def test_AudioStore_get_audio_replaces_non_dict_meta_data_with_no_license_url(
         creator_url=None,
         title=None,
         album=None,
+        audio_type=None,
         genre=None,
         language=None,
         meta_data='notadict',
@@ -316,6 +320,7 @@ def test_AudioStore_get_audio_creates_meta_data_with_license_url(
         creator_url=None,
         title=None,
         album=None,
+        audio_type=None,
         genre=None,
         language=None,
         meta_data=None,
@@ -347,6 +352,7 @@ def test_AudioStore_get_audio_adds_license_url_to_dict_meta_data(
         creator_url=None,
         title=None,
         album=None,
+        audio_type=None,
         genre=None,
         language=None,
         meta_data={'key1': 'val1'},
@@ -381,6 +387,7 @@ def test_AudioStore_get_audio_enriches_singleton_tags(
         creator_url=None,
         title=None,
         album=None,
+        audio_type=None,
         genre=None,
         language=None,
         meta_data=None,
@@ -412,6 +419,7 @@ def test_AudioStore_get_audio_enriches_multiple_tags(
         creator_url=None,
         title=None,
         album=None,
+        audio_type=None,
         genre=None,
         language=None,
         meta_data=None,
@@ -453,6 +461,7 @@ def test_AudioStore_get_audio_leaves_preenriched_tags(
         creator_url=None,
         title=None,
         album=None,
+        audio_type=None,
         genre=None,
         language=None,
         meta_data=None,
@@ -486,6 +495,7 @@ def test_AudioStore_get_audio_nones_nonlist_tags(
         creator_url=None,
         title=None,
         album=None,
+        audio_type=None,
         genre=None,
         language=None,
         meta_data=None,
@@ -517,6 +527,7 @@ def default_audio_args(
         creator_url=None,
         title=None,
         album=None,
+        audio_type=None,
         genre=None,
         language=None,
         meta_data=None,
@@ -601,7 +612,7 @@ def test_create_tsv_row_handles_empty_dict_and_tags(
     test_audio = audio._Audio(**audio_args)
 
     actual_row = audio_store._create_tsv_row(test_audio).split('\t')
-    actual_meta_data, actual_tags = actual_row[18], actual_row[19]
+    actual_meta_data, actual_tags = actual_row[19], actual_row[20]
     expect_meta_data, expect_tags = '\\N', '\\N'
     assert expect_meta_data == actual_meta_data
     assert expect_tags == actual_tags
@@ -619,7 +630,7 @@ def test_create_tsv_row_turns_empty_into_nullchar(
     assert all(
         [
             actual_row[i] == '\\N'
-            for i in [0, 3, 4, 5, 6, 7, 8, 9, 12, 13, 14, 15, 16, 17, 18, 19, 20]
+            for i in [0, 3, 4, 5, 6, 7, 8, 9, 12, 13, 14, 15, 16, 17, 18, 19, 20, 21]
         ]
     ) is True
     assert actual_row[-1] == '\\N\n'
@@ -648,6 +659,7 @@ def test_create_tsv_row_properly_places_entries(
         'creator_url': 'https://creatorurl.com',
         'title': 'agreatsound',
         'album': 'analbum',
+        'audio_type': 'sound',
         'genre': 'nature',
         'language': 'English',
         'meta_data': {'description': 'cat meow'},
@@ -678,6 +690,7 @@ def test_create_tsv_row_properly_places_entries(
         'https://creatorurl.com',
         'agreatsound',
         'analbum',
+        'sound',
         'nature',
         'English',
         '{"description": "cat meow"}',
