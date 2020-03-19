@@ -14,6 +14,7 @@ import argparse
 from datetime import datetime, timedelta, timezone
 import logging
 from multiprocessing import Pool
+from math import ceil
 
 import common.requester as requester
 import common.storage.image as image
@@ -44,6 +45,7 @@ DEFAULT_QUERY_PARAMS = {
     'fl[]': 'identifier,title,mediatype,collection,licenseurl,date',
     'rows': str(ROWS_PER_PAGE),
     'output': 'json',
+    'sort': 'identifier'
 }
 
 DETAIL_URL = 'https://archive.org/details/{}'
@@ -142,14 +144,13 @@ def _get_total_pages(start_timestamp, end_timestamp):
         1
     )
 
-    total_pages = int(_get_response_json(
+    total_pages = ceil(_get_response_json(
         query_params,
         endpoint=ENDPOINT,
         request_headers=DEFAULT_REQUEST_HEADERS,
         retries=0
     ).get('response')['numFound']/ROWS_PER_PAGE)
     logger.info(f'Total pages: {total_pages}')
-
     return (total_pages)
 
 
