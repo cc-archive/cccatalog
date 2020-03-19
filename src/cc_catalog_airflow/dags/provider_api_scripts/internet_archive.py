@@ -11,13 +11,9 @@ Notes:                  https://blog.archive.org/developers/
 """
 
 import argparse
-from copy import deepcopy
 from datetime import datetime, timedelta, timezone
 import logging
-import os
-from urllib.parse import urlparse
 from multiprocessing import Pool
-from itertools import product
 
 import common.requester as requester
 import common.storage.image as image
@@ -149,7 +145,7 @@ def _get_total_pages(start_timestamp, end_timestamp):
     total_pages = int(_get_response_json(
         query_params,
         endpoint=ENDPOINT,
-        request_headers=DEFAULT_QUERY_PARAMS,
+        request_headers=DEFAULT_REQUEST_HEADERS,
         retries=0
     ).get('response')['numFound']/ROWS_PER_PAGE)
     logger.info(f'Total pages: {total_pages}')
