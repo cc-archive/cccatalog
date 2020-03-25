@@ -77,30 +77,28 @@ def main(date):
 
     start_timestamp, end_timestamp = _derive_timestamp_pair(date)
     total_sounds = _process_pages(start_timestamp, end_timestamp)
-    total_sounds = image_store.commit()
 
     logger.info(f'Total sounds: {total_sounds}')
     logger.info('Terminated!')
 
 
 def _process_pages(start_timestamp, end_timestamp):
+    total_sounds = 0
     total_pages = _get_total_pages(start_timestamp, end_timestamp)
-    iterable = []
-    for page_number in range(1, total_pages+1):
-        iterable.append([start_timestamp, end_timestamp, page_number])
-
-    # Multi processing with threads getting output for different pages
-    # simultaneously
-
-    with Pool(processes=4) as pool:
-        sounds_for_all_pages = pool.starmap(_get_sound_for_page, iterable)
-
-    for sounds_for_page in sounds_for_all_pages:
+    for page in range(1, total_pages+1):
+        sounds_for_page = _get_sound_for_page(
+            start_timestamp,
+            end_timestamp,
+            page)
         if sounds_for_page is not None:
             total_sounds = _process_page(sounds_for_page)
+            if total_sounds >= 100:
+                image_store.commit()
             logger.info(f'Total sound processed so far: {total_sounds}')
         else:
             logger.warning('No sound data!  Attempting to continue')
+        if page == total_pages:
+            image_store.commit()
 
     logger.info(f'Total page processed: {total_pages}')
     return total_sounds
@@ -126,7 +124,6 @@ def _get_sound_for_page(
         end_timestamp,
         page
     )
-
     sounds_for_page = _get_response_json(
         query_params,
         endpoint=ENDPOINT,
@@ -144,14 +141,16 @@ def _get_total_pages(start_timestamp, end_timestamp):
         1
     )
 
-    total_pages = ceil(_get_response_json(
+    total_pages_response = _get_response_json(
         query_params,
         endpoint=ENDPOINT,
         request_headers=DEFAULT_REQUEST_HEADERS,
         retries=0
-    ).get('response')['numFound']/ROWS_PER_PAGE)
+    )
+
+    total_pages = ceil(total_pages_response.get('response')['numFound']/ROWS_PER_PAGE)
     logger.info(f'Total pages: {total_pages}')
-    return (total_pages)
+    return total_pages
 
 
 def _build_query_params(
@@ -225,27 +224,37 @@ def _process_page(sounds_for_page):
 
 def _process_sound(sound):
 
+    meta_and_download_url = _get_meta_data_and_download_url(sound.get('identifier'))
     return image_store.add_item(
         foreign_landing_url=DETAIL_URL.format(sound.get('identifier')),
         license_url=sound.get('licenseurl'),
         foreign_identifier=sound.get('identifier'),
         creator=sound.get('creator'),
         title=sound.get('title'),
-        image_url=_get_download_url(sound.get('identifier')),
-        meta_data=_get_meta_data(sound.get('identifier')),
+        image_url=meta_and_download_url['download_url'],
+        meta_data=meta_and_download_url['meta_data'],
     )
 
 
-def _get_meta_data(identifier):
+def _get_meta_data_and_download_url(identifier):
     meta_data = delayed_requester.get(META_URL.format(identifier))
-    return meta_data.json()
+    return_dict = {
+        'meta_data': meta_data.json(),
+    }
+    for i in meta_data.json().get('files'):
+        if ".mp3" in i.get('name').lower():
+            return_dict['download_url'] = DOWNLOAD_URL.format(identifier, i.get('name'))
+            break
+    if "download_url" not in return_dict:
+        return_dict['download_url'] = ""
+    return return_dict
 
 
 def _get_download_url(identifier):
     meta_data = delayed_requester.get(META_URL.format(identifier)).json()
     for i in meta_data.get('files'):
         if ".mp3" in i.get('name'):
-            return (DOWNLOAD_URL.format(identifier, i.get('name')))
+            return ()
 
 
 if __name__ == '__main__':

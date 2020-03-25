@@ -1,0 +1,39 @@
+{
+    "responseHeader": {
+        "status": 0,
+        "QTime": 934,
+        "params": {
+            "query": "mediatype:audio",
+            "qin": "mediatype:audio",
+            "fields": "identifier,title,mediatype,collection,licenseurl,date",
+            "wt": "json",
+            "sort": "identifier",
+            "rows": "2",
+            "start": 0
+        }
+    },
+    "response": {
+        "numFound": 865,
+        "start": 0,
+        "docs": [
+            {
+                "collection": [
+                    "audio",
+                    "folksoundomy"
+                ],
+                "identifier": "0--Twitt-alhlhl91192",
+                "mediatype": "audio",
+                "title": "0--Twitt-alhlhl91192"
+            },
+            {
+                "collection": [
+                    "audio",
+                    "folksoundomy"
+                ],
+                "identifier": "0-01-Titel",
+                "mediatype": "audio",
+                "title": "0-01-Titel"
+            }
+        ]
+    }
+}

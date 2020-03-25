@@ -1,11 +1,9 @@
 import json
 import logging
 import os
-import pickle
 import requests
-from unittest.mock import patch, MagicMock
-
 import pytest
+from unittest.mock import patch, MagicMock
 
 import internet_archive as ia
 
@@ -27,11 +25,24 @@ def test_derive_timestamp_pair():
 
 
 def test_get_total_pages():
+    r = requests.Response()
+    r.status_code = 200
+    with open(
+            os.path.join(RESOURCES, 'total_pages_response.json')
+    ) as f:
+        response_dict = json.load(f)
+    r.json = MagicMock(return_value=response_dict)
     start_timestamp = '2019-03-18'
     end_timestamp = '2019-03-19'
     expected_result = 5
-    result = ia._get_total_pages(start_timestamp, end_timestamp)
-    assert expected_result == result
+    with patch.object(
+            ia.delayed_requester,
+            'get',
+            return_value=r
+    ) as mock_total_pages:
+        mock_total_pages.result = ia._get_total_pages(start_timestamp, end_timestamp)
+
+    assert mock_total_pages.result == expected_result
 
 
 def test_build_query_params_adds_date_and_page():
@@ -41,51 +52,80 @@ def test_build_query_params_adds_date_and_page():
     result_params = ia._build_query_params(
         start_date, end_date, page
     )
-    assert result_params['q'] == "mediatype:audio AND" + \
-        " date:[2019-03-18 TO 2019-03-19]"
+    assert result_params['q'] == "mediatype:audio AND date:[2019-03-18 TO 2019-03-19]"
     assert result_params['page'] == 2
 
 
 def test_get_sound_for_page():
+    r = requests.Response()
+    r.status_code = 200
     start_timestamp = '2019-03-18'
     end_timestamp = '2019-03-19'
-    ia.DEFAULT_QUERY_PARAMS['rows'] = '2'
-    expected_result = [{'collection': ['opensource_audio',
-                                       'fav-david_smith1967'],
-                        'date': '2019-03-18T00:00:00Z',
-                        'identifier': '01MademoiselleFifi',
-                        'licenseurl': 'http://creativecommons.org/' +
-                        'publicdomain/mark/1.0/',
-                        'mediatype': 'audio',
-                        'title': 'Family Theater: Set 10'},
-                       {'collection': ['opensource_audio'],
-                        'date': '2019-03-19T00:00:00Z',
-                        'identifier': '02IHaveFaith',
-                        'mediatype': 'audio',
-                        'title': 'John Wayne: 45: Walk With Him'}]
+    with open(
+            os.path.join(RESOURCES, 'total_pages_response.json')
+    ) as f:
+        response_dict = json.load(f)
 
-    actual_result = ia._get_sound_for_page(start_timestamp, end_timestamp, 1)
+    r.json = MagicMock(return_value=response_dict)
+    expected_result = [
+        {
+            "collection": [
+                "audio",
+                "folksoundomy"
+            ],
+            "identifier": "0--Twitt-alhlhl91192",
+            "mediatype": "audio",
+            "title": "0--Twitt-alhlhl91192"
+        },
+        {
+            "collection": [
+                "audio",
+                "folksoundomy"
+            ],
+            "identifier": "0-01-Titel",
+            "mediatype": "audio",
+            "title": "0-01-Titel"
+        }
+    ]
+    with patch.object(
+            ia.delayed_requester,
+            'get',
+            return_value=r
+    ) as mock_get_sounds_for_page:
+        mock_get_sounds_for_page.actual_result = ia._get_sound_for_page(start_timestamp, end_timestamp, 1)
 
-    assert expected_result == actual_result
+    assert expected_result == mock_get_sounds_for_page.actual_result
 
 
 def test_get_meta_data():
     identifier = '01MademoiselleFifi'
-
+    r = requests.Response()
+    r.status_code = 200
     with open(
             os.path.join(RESOURCES, 'expected_metadata.json')
     ) as f:
         expected_meta = json.load(f)
 
-    actual_meta = ia._get_meta_data(identifier)
+    with open(
+            os.path.join(RESOURCES, 'metadata.json')
+    ) as f:
+        response_dict = json.load(f)
+    r.json = MagicMock(return_value=response_dict)
 
-    assert expected_meta == actual_meta
+    with patch.object(
+            ia.delayed_requester,
+            'get',
+            return_value=r
+    ) as mock_meta:
+        mock_meta.actual_meta = ia._get_meta_data(identifier=identifier)
+
+    assert expected_meta == mock_meta.actual_meta
 
 
 def test_get_download_url():
     identifier = '01MademoiselleFifi'
-    expected_url = "https://archive.org/download/01MademoiselleFifi/01"+
-    " Mademoiselle Fifi.mp3"
+    expected_url = "https://archive.org/download/01MademoiselleFifi/01" \
+                   " Mademoiselle Fifi.mp3"
 
     actual_url = ia._get_download_url(identifier)
 
@@ -107,24 +147,10 @@ def test_get_response_json_retries_with_none_response():
 def test_get_response_json_retries_with_non_ok():
     r = requests.Response()
     r.status_code = 504
-    response = {'responseHeader': {'status': 0,
-                                   'QTime': 254,
-                                   'params': {'query': 'mediatype:audio' +
-                                              ' AND date:[2019-03-' +
-                                              '18T00\\:00\\:00Z TO ' +
-                                              '2019-03-18T23\\:59\\:59Z]',
-                                              'qin': 'mediatype:audio ' +
-                                              'AND date:[2019-03-18 TO' +
-                                              ' 2019-03-18]',
-                                              'fields': 'identifier,title' +
-                                              ',mediatype,collection,' +
-                                              'licenseurl,date',
-                                              'wt': 'json',
-                                              'rows': '200',
-                                              'start': 0}},
-                'response': {'numFound': 0,
-                             'start': 0,
-                             'docs': []}}
+    with open(
+            os.path.join(RESOURCES, 'get_json_response.json')
+    ) as f:
+        response = json.load(f)
     r.json = MagicMock(return_value=response)
     with patch.object(
             ia.delayed_requester,
@@ -153,26 +179,12 @@ def test_get_response_json_retries_with_error_json():
 
 
 def test_get_response_json_returns_response_json_when_all_ok():
-    response = {'responseHeader': {'status': 0,
-                                   'QTime': 254,
-                                   'params': {'query': 'mediatype:audio' +
-                                              ' AND date:[2019-03-' +
-                                              '18T00\\:00\\:00Z TO ' +
-                                              '2019-03-18T23\\:59\\:59Z]',
-                                              'qin': 'mediatype:audio ' +
-                                              'AND date:[2019-03-18 TO' +
-                                              ' 2019-03-18]',
-                                              'fields': 'identifier,title' +
-                                              ',mediatype,collection,' +
-                                              'licenseurl,date',
-                                              'wt': 'json',
-                                              'rows': '200',
-                                              'start': 0}},
-                'response': {'numFound': 0,
-                             'start': 0,
-                             'docs': []}}
     r = requests.Response()
     r.status_code = 200
+    with open(
+            os.path.join(RESOURCES, 'get_json_response.json')
+    ) as f:
+        response = json.load(f)
     r.json = MagicMock(return_value=response)
     with patch.object(
             ia.delayed_requester,

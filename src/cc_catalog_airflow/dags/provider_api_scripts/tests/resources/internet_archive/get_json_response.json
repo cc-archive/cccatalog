@@ -1,0 +1,19 @@
+{
+    "responseHeader": {
+        "status": 0,
+        "QTime": 254,
+        "params": {
+            "query": "mediatype:audio AND date:[2019-03-18T00\\:00\\:00Z TO 2019-03-18T23\\:59\\:59Z]",
+            "qin": "mediatype:audio AND date:[2019-03-18 TO 2019-03-18]",
+            "fields": "identifier,title,mediatype,collection,licenseurl,date",
+            "wt": "json",
+            "rows": "200",
+            "start": 0
+        }
+    },
+    "response": {
+        "numFound": 0,
+        "start": 0,
+        "docs": []
+    }
+}
