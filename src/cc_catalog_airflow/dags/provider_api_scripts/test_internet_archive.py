@@ -97,7 +97,7 @@ def test_get_sound_for_page():
     assert expected_result == mock_get_sounds_for_page.actual_result
 
 
-def test_get_meta_data():
+def test_get_meta_data_and_download_url():
     identifier = '01MademoiselleFifi'
     r = requests.Response()
     r.status_code = 200
@@ -117,19 +117,13 @@ def test_get_meta_data():
             'get',
             return_value=r
     ) as mock_meta:
-        mock_meta.actual_meta = ia._get_meta_data(identifier=identifier)
+        mock_meta.actual_meta = ia._get_meta_data_and_download_url(identifier=identifier)["meta_data"]
+        mock_meta.actual_url = ia._get_meta_data_and_download_url(identifier=identifier)["download_url"]
 
-    assert expected_meta == mock_meta.actual_meta
-
-
-def test_get_download_url():
-    identifier = '01MademoiselleFifi'
     expected_url = "https://archive.org/download/01MademoiselleFifi/01" \
                    " Mademoiselle Fifi.mp3"
-
-    actual_url = ia._get_download_url(identifier)
-
-    assert actual_url == expected_url
+    assert expected_meta == mock_meta.actual_meta
+    assert expected_url == mock_meta.actual_url
 
 
 def test_get_response_json_retries_with_none_response():
