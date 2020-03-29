@@ -36,7 +36,8 @@ MAX_TAG_STRING_LENGTH = 2000
 
 DEFAULT_QUERY_PARAMS = {
     'format': 'json',
-    'fields': 'id,url,download,license,name,username,description,tags',
+    'fields': ('id,url,download,license,name,pack,username,type,duration,'
+               'samplerate,bitdepth,channels,description,tags'),
 }
 
 delayed_requester = DelayedRequester(DELAY)
@@ -177,9 +178,15 @@ def _process_sound_data(sound_data):
     return audio_store.add_item(
         foreign_landing_url=sound_data.get('url'),
         audio_url=sound_data.get('download'),
+        file_format=sound_data.get('type'),
+        duration=sound_data.get('duration'),
+        samplerate=sound_data.get('samplerate'),
+        bitdepth=sound_data.get('bitdepth'),
+        channels=sound_data.get('channels'),
         license_url=sound_data.get('license'),
         creator=sound_data.get('username'),
         title=sound_data.get('name'),
+        album=sound_data.get('pack'),
         meta_data={
             'description': sound_data.get('description'),
         },
