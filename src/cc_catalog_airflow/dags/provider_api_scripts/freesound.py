@@ -16,7 +16,7 @@ import logging
 import os
 
 from common.requester import DelayedRequester
-from common.storage import image  # TODO: sound storage
+from common.storage import audio
 
 logging.basicConfig(
     format='%(asctime)s - %(name)s - %(levelname)s:  %(message)s',
@@ -40,7 +40,7 @@ DEFAULT_QUERY_PARAMS = {
 }
 
 delayed_requester = DelayedRequester(DELAY)
-image_store = image.ImageStore(provider=PROVIDER)
+audio_store = audio.AudioStore(provider=PROVIDER)
 
 
 def main(date):
@@ -50,7 +50,7 @@ def main(date):
 
     total_sounds = _process_date(start_timestamp, end_timestamp)
 
-    total_sounds = image_store.commit()
+    total_sounds = audio_store.commit()
     logger.info(f'Total sounds: {total_sounds}')
     logger.info('Terminated!')
 
@@ -174,9 +174,9 @@ def _process_sound_list(sound_list):
 def _process_sound_data(sound_data):
     logger.debug(f'Processing sound data: {sound_data}')
 
-    return image_store.add_item(
+    return audio_store.add_item(
         foreign_landing_url=sound_data.get('url'),
-        image_url=sound_data.get('download'),
+        audio_url=sound_data.get('download'),
         license_url=sound_data.get('license'),
         creator=sound_data.get('username'),
         title=sound_data.get('name'),
