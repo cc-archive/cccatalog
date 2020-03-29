@@ -37,7 +37,8 @@ MAX_TAG_STRING_LENGTH = 2000
 DEFAULT_QUERY_PARAMS = {
     'format': 'json',
     'fields': ('id,url,download,license,name,pack,username,type,duration,'
-               'samplerate,bitdepth,channels,description,tags'),
+               'samplerate,bitdepth,channels,description,created,bitrate,'
+               'num_downloads,num_ratings,num_comments,similar_sounds,tags'),
 }
 
 delayed_requester = DelayedRequester(DELAY)
@@ -188,7 +189,13 @@ def _process_sound_data(sound_data):
         title=sound_data.get('name'),
         album=sound_data.get('pack'),
         meta_data={
+            'pub_date': sound_data.get('created'),
             'description': sound_data.get('description'),
+            'bitrate': sound_data.get('bitrate'),
+            'views': sound_data.get('num_downloads'),
+            'num_ratings': sound_data.get('num_ratings'),
+            'num_comments': sound_data.get('num_comments'),
+            'related': sound_data.get('similar_sounds'),
         },
         raw_tags=_create_tags_list(sound_data),
     )
