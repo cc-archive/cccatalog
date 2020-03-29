@@ -36,7 +36,7 @@ MAX_TAG_STRING_LENGTH = 2000
 
 DEFAULT_QUERY_PARAMS = {
     'format': 'json',
-    'fields': 'id,url,download,license,name,username,tags',
+    'fields': 'id,url,download,license,name,username,description,tags',
 }
 
 delayed_requester = DelayedRequester(DELAY)
@@ -180,6 +180,9 @@ def _process_sound_data(sound_data):
         license_url=sound_data.get('license'),
         creator=sound_data.get('username'),
         title=sound_data.get('name'),
+        meta_data={
+            'description': sound_data.get('description'),
+        },
         raw_tags=_create_tags_list(sound_data),
     )
 
