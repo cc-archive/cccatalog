@@ -187,6 +187,7 @@ def _process_sound_data(sound_data):
         license_url=sound_data.get('license'),
         creator=sound_data.get('username'),
         title=sound_data.get('name'),
+        # TODO: perform requests to URLs in `pack` and `similar_sounds`
         album=sound_data.get('pack'),
         meta_data={
             'pub_date': sound_data.get('created'),
