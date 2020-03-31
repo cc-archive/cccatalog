@@ -40,7 +40,10 @@ def test_get_total_pages():
             'get',
             return_value=r
     ) as mock_total_pages:
-        mock_total_pages.result = ia._get_total_pages(start_timestamp, end_timestamp)
+        mock_total_pages.result = ia._get_total_pages(
+            start_timestamp,
+            end_timestamp
+        )
 
     assert mock_total_pages.result == expected_result
 
@@ -52,7 +55,8 @@ def test_build_query_params_adds_date_and_page():
     result_params = ia._build_query_params(
         start_date, end_date, page
     )
-    assert result_params['q'] == "mediatype:audio AND date:[2019-03-18 TO 2019-03-19]"
+    assert result_params['q'] == "mediatype:audio AND date:" \
+                                 "[2019-03-18 TO 2019-03-19]"
     assert result_params['page'] == 2
 
 
@@ -92,7 +96,11 @@ def test_get_sound_for_page():
             'get',
             return_value=r
     ) as mock_get_sounds_for_page:
-        mock_get_sounds_for_page.actual_result = ia._get_sound_for_page(start_timestamp, end_timestamp, 1)
+        mock_get_sounds_for_page.actual_result = ia._get_sound_for_page(
+            start_timestamp,
+            end_timestamp,
+            1
+        )
 
     assert expected_result == mock_get_sounds_for_page.actual_result
 
@@ -117,8 +125,10 @@ def test_get_meta_data_and_download_url():
             'get',
             return_value=r
     ) as mock_meta:
-        mock_meta.actual_meta = ia._get_meta_data_and_download_url(identifier=identifier)["meta_data"]
-        mock_meta.actual_url = ia._get_meta_data_and_download_url(identifier=identifier)["download_url"]
+        mock_meta.actual_meta = ia._get_meta_data_and_download_url(
+            identifier=identifier)["meta_data"]
+        mock_meta.actual_url = ia._get_meta_data_and_download_url(
+            identifier=identifier)["download_url"]
 
     expected_url = "https://archive.org/download/01MademoiselleFifi/01" \
                    " Mademoiselle Fifi.mp3"

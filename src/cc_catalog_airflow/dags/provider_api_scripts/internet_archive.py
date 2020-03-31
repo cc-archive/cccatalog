@@ -148,7 +148,8 @@ def _get_total_pages(start_timestamp, end_timestamp):
         retries=0
     )
 
-    total_pages = ceil(total_pages_response.get('response')['numFound']/ROWS_PER_PAGE)
+    total_pages = ceil(total_pages_response.get('response')
+                       ['numFound']/ROWS_PER_PAGE)
     logger.info(f'Total pages: {total_pages}')
     return total_pages
 
@@ -224,7 +225,8 @@ def _process_page(sounds_for_page):
 
 def _process_sound(sound):
 
-    meta_and_download_url = _get_meta_data_and_download_url(sound.get('identifier'))
+    meta_and_download_url = _get_meta_data_and_download_url(
+        sound.get('identifier'))
     return image_store.add_item(
         foreign_landing_url=DETAIL_URL.format(sound.get('identifier')),
         license_url=sound.get('licenseurl'),
@@ -243,7 +245,8 @@ def _get_meta_data_and_download_url(identifier):
     }
     for i in meta_data.json().get('files'):
         if ".mp3" in i.get('name').lower():
-            return_dict['download_url'] = DOWNLOAD_URL.format(identifier, i.get('name'))
+            return_dict['download_url'] = DOWNLOAD_URL.format(
+                identifier, i.get('name'))
             break
     if "download_url" not in return_dict:
         return_dict['download_url'] = ""
