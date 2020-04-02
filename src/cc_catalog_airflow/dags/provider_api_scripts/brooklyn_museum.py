@@ -40,6 +40,7 @@ def main():
 	logger.info('Begin: Brooklyn Museum API requests')
 	condition = True
 	offset = 0
+	image_count = 0
 	headers  = {'api_key': API_KEY}
 
 	while condition:
