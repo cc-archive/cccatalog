@@ -62,9 +62,7 @@ def main():
 	image_count = image_store.commit()
 	logger.info(f'Total number of images received {image_count}')
 
-def _build_query_param(offset=0,
-					   default_query_param=DEFAULT_QUERY_PARAM
-					   ):
+def _build_query_param(offset=0,default_query_param=DEFAULT_QUERY_PARAM):
 	query_param = default_query_param.copy()
 	query_param.update(
 		skip=offset
@@ -72,12 +70,7 @@ def _build_query_param(offset=0,
 	return query_param
 
 
-def _get_response(
-				query_param,
-				headers,
-				endpoint=ENDPOINT,
-				retries=RETRIES
-				):
+def _get_response(query_param,headers,endpoint=ENDPOINT,retries=RETRIES):
 	response_json, total_images = None, 0
 	for tries in range(retries):
 		response = delayed_requester.get(
