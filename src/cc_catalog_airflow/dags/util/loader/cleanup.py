@@ -12,8 +12,8 @@ import os
 update_tld_names()
 
 """
-Functions for processing data when it is imported into the CC Catalog. This
-includes cleaning up malformed URLs and filtering out undesirable tags.
+Functions for processing data. This includes cleaning up malformed
+URLs and filtering out undesirable tags.
 """
 
 # Number of records to buffer in memory at once
@@ -249,11 +249,8 @@ def clean_image_data(
     identifier
 ):
     """
-    Data from upstream can be unsuitable for production for a number of reasons.
-    Clean it up before we go live with the new data.
-    :param table: The staging table for the new data
-    :param upstream_db: A dict specifying the connection details of the upstream
-    database.
+    :param identifier: Identifier to get the required table for processing
+    :param postgres_conn_id: Connection ID to be passed to the PostgreSql hook.
     :return: None
     """
     # Map each table to the fields that need to be cleaned up. Then, map each
