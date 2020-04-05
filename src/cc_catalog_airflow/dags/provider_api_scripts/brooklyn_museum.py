@@ -49,7 +49,9 @@ def main():
             condition = False
     if len(object_ids) > 0:
         for id in object_ids:
-            _handle_response(id)
+            data = _get_response(endpoint=ENDPOINT+str(id))
+            image_count = _handle_response(data)
+            logger.debug(image_count)
         total_images = image_store.commit()
         logger.info(f"Total images recieved {total_images}")
     else:
@@ -84,30 +86,33 @@ def _get_response(headers=HEADERS,
     return None
 
 
-def _handle_response(id):
-    data = _get_response(endpoint=ENDPOINT+str(id))
-    if data is not None:
-        rights_info = data.get("rights_type")
-        license_url = _get_license_url(rights_info)
-        if license_url is None:
-            return None
+def _handle_response(data):
+    image_count = 0
+    if data is None:
+        return 0
 
-        title = data.get("title", "")
-        foreign_url = f"https://www.brooklynmuseum.org/opencollection/objects/{id}"
-        metadata = _get_metadata(data)
-        creators = _get_creators(data)
-        image_info = data.get("images", None)
-        if image_info is None:
-            return None
+    rights_info = data.get("rights_type")
+    license_url = _get_license_url(rights_info)
+    if license_url is None:
+        return None
 
-        for image in image_info:
-            foreign_id = image.get("id", "")
-            image_url, thumbnail_url = _get_images(image)
-            if image_url is None:
-                continue
-            height, width = _get_image_sizes(image)
+    id = data.get("id", "")
+    title = data.get("title", "")
+    foreign_url = f"https://www.brooklynmuseum.org/opencollection/objects/{id}"
+    metadata = _get_metadata(data)
+    creators = _get_creators(data)
+    image_info = data.get("images", None)
+    if image_info is None:
+        return None
 
-            total_images = image_store.add_item(
+    for image in image_info:
+        foreign_id = image.get("id", "")
+        image_url, thumbnail_url = _get_images(image)
+        if image_url is None:
+            continue
+        height, width = _get_image_sizes(image)
+
+        total_images = image_store.add_item(
                 foreign_landing_url=foreign_url,
                 image_url=image_url,
                 license_url=license_url,
@@ -119,7 +124,9 @@ def _handle_response(id):
                 meta_data=metadata,
                 creator=creators
             )
-            logger.debug(total_images)
+        logger.debug(total_images)
+        image_count += total_images
+    return image_count
 
 
 def _get_image_sizes(image):
@@ -167,7 +174,7 @@ def _get_creators(data):
 def _get_images(image):
     image_url = image.get("largest_derivative_url", "")
     if not image_url:
-        return None
+        return None, None
     if "http" not in image_url:
         image_url = "https://" + image_url
     thumbnail_url = image.get("thumbnail_url", "")
