@@ -35,7 +35,7 @@ logger = logging.getLogger(__name__)
 def main():
     logger.info("Begin: Brooklyn museum provider script")
     object_ids = []
-    offset = 39225
+    offset = 0
     condition = True
     while condition:
         query_param = _get_query_param(offset)
