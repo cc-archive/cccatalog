@@ -93,8 +93,7 @@ def _handle_response(id):
             return None
 
         title = data.get("title", "")
-        foreign_url = "https://www.brooklynmuseum.org/"
-        f"opencollection/objects/{id}"
+        foreign_url = f"https://www.brooklynmuseum.org/opencollection/objects/{id}"
         metadata = _get_metadata(data)
         creators = _get_creators(data)
         image_info = data.get("images", None)
