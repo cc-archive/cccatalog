@@ -4,7 +4,7 @@ import logging
 from common.requester import DelayedRequester
 from common.storage.image import ImageStore
 
-LIMIT = 30
+LIMIT = 35
 DELAY = 5.0
 RETRIES = 3
 PROVIDER = "brooklynmuseum"
@@ -35,12 +35,13 @@ logger = logging.getLogger(__name__)
 def main():
     logger.info("Begin: Brooklyn museum provider script")
     object_ids = []
-    offset = 0
+    offset = 39225
     condition = True
     while condition:
         query_param = _get_query_param(offset)
         data = _get_response(query_param=query_param)
-        if data is not None:
+        logger.debug(len(data))
+        if len(data) > 0:
             for obj in data:
                 object_ids.append(obj.get("id", ""))
             offset += LIMIT
@@ -77,7 +78,7 @@ def _get_response(headers=HEADERS,
             )
             data = response.json()
             if data and data.get("message", "").lower() == "success.":
-                return data.get("data", None)
+                return data.get("data", "")
         except Exception as e:
             logger.warning(f"response not captured due to {e}")
     return None
@@ -92,7 +93,8 @@ def _handle_response(id):
             return None
 
         title = data.get("title", "")
-        foreign_url = f"https://www.brooklynmuseum.org/opencollection/objects/{id}"
+        foreign_url = "https://www.brooklynmuseum.org/"
+        f"opencollection/objects/{id}"
         metadata = _get_metadata(data)
         creators = _get_creators(data)
         image_info = data.get("images", None)
@@ -118,11 +120,13 @@ def _handle_response(id):
                 meta_data=metadata,
                 creator=creators
             )
-            logger.warning(total_images)
+            logger.debug(total_images)
 
 
 def _get_image_sizes(image):
     size_list = image.get("derivatives", "")
+    if type(size_list) is not list:
+        return None, None
     size_type = image.get("largest_derivative", "")
     for size in size_list:
         if size.get("size", "") == size_type:
@@ -148,6 +152,7 @@ def _get_metadata(data):
     metadata["medium"] = data.get("medium", "")
     metadata["credit_line"] = data.get("credit_line", "")
     metadata["classification"] = data.get("classification", "")
+    return metadata
 
 
 def _get_creators(data):
