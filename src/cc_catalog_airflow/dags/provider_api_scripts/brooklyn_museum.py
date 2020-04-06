@@ -18,7 +18,6 @@ logger = logging.getLogger(__name__)
 
 DELAY = 3.0  # time delay (in seconds)
 RETRIES = 3
-FILE = 'brooklynmuseum_{}.tsv'.format(int(time.time()))
 API_KEY = os.getenv('BROOKLYN_MUSEUM_API_KEY')
 PROVIDER = 'brooklynmuseum'
 LIMIT = 10
@@ -27,13 +26,13 @@ ENDPOINT = 'https://www.brooklynmuseum.org/api/v2/'
 logging.basicConfig(format='%(asctime)s: [%(levelname)s - Brooklyn Museum API] =======> %(message)s', level=logging.INFO)
 
 delayed_requester = DelayedRequester(DELAY)
-image_store = image.ImageStore(provider=PROVIDER, output_file=FILE)
+image_store = image.ImageStore(provider=PROVIDER)
 
 DEFAULT_QUERY_PARAM = {
-    'cc': '1',
-    'has_image': '1',
-    'limit': LIMIT,
-    'skip': 0
+    "has_images": 1,
+    "rights_type_permissive": 1,
+    "limit": LIMIT,
+    "offset": 0
 }
 
 
@@ -68,7 +67,7 @@ def main():
 def _build_query_param(offset=0, default_query_param=DEFAULT_QUERY_PARAM):
     query_param = default_query_param.copy()
     query_param.update(
-        skip=offset
+        offset=offset
     )
     return query_param
 
@@ -118,13 +117,8 @@ def _handle_response(objectData, _objectID):
         logging.warning('License not detected!')
         return None
 
-    licenseInfo = re.search('https://creativecommons.org/licenses/[^\s]+', rightsInfo.get('description'))
-    licenseURL = licenseInfo.group(0).strip()
-    if licenseURL:
-        ccURL = urlparse(licenseURL)
-        license, version = getLicense(ccURL.netloc, ccURL.path, licenseURL)
-    else:
-        logging.warning('License not detected!')
+    licenseURL = _get_license_url(rightsInfo)
+    if licenseURL is None:
         return None
 
     title = objectData.get('title', '')
@@ -133,18 +127,12 @@ def _handle_response(objectData, _objectID):
     foreignURL = 'https://www.brooklynmuseum.org/opencollection/objects/{}'.format(_objectID)
     artists = objectData.get('artists')
     artistInfo = [{'name': artist['name'], 'nationality': artist['nationality']} for artist in artists]
+    metaData = _get_metadata(objectData)
     if artistInfo:
         creator = artistInfo[0].get('name')
         metaData['artist_info'] = artistInfo
 
-    metaData['credit_line'] = objectData.get('credit_line')
-    metaData['medium'] = objectData.get('medium')
-    metaData['description'] = objectData.get('description')
-    metaData['date'] = objectData.get('object_date')
-    metaData['credit_line'] = objectData.get('period')
-    metaData['classification'] = objectData.get('classification')
-    metaData['accession_number'] = objectData.get('accession_number')
-
+    
     imageInfo = objectData.get('images')
     if not imageInfo:
         logging.warning('Image not detected for object {}'.format(_objectID))
@@ -178,7 +166,7 @@ def _handle_response(objectData, _objectID):
             foreign_landing_url=foreignURL,
             image_url=imgURL,
             thumbnail_url=thumbnail,
-            license_=license,
+            license_=licenseURL,
             license_version=version,
             width=width,
             height=height,
@@ -188,6 +176,26 @@ def _handle_response(objectData, _objectID):
             )
 
     return total_images
+
+
+def _get_license_url(rightsInfo):
+    if "creative commons" not in rightsInfo.get("name").lower():
+        return None
+    licenseURL = re.search('https://creativecommons.org/licenses/[^\s]+',
+                            rightsInfo.get('description'))
+    licenseURL = licenseURL.group(0).strip()
+    return licenseURL
+
+
+def _get_metadata(objectData):
+    metaData['credit_line'] = objectData.get('credit_line')
+    metaData['medium'] = objectData.get('medium')
+    metaData['description'] = objectData.get('description')
+    metaData['date'] = objectData.get('object_date')
+    metaData['credit_line'] = objectData.get('period')
+    metaData['classification'] = objectData.get('classification')
+    metaData['accession_number'] = objectData.get('accession_number')
+    return metaData
 
 
 def _extract_response_json(response):
