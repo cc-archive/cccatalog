@@ -1,5 +1,4 @@
 """
-Edit to run tests
 Content Provider:       Brooklyn Museum
 
 ETL Process:            Use the API to identify all CC licensed artworks.
@@ -10,8 +9,8 @@ Notes:                  https://www.brooklynmuseum.org/opencollection/api
                         3000 calls per day (per API Key)
 """
 import logging
-import time
 import os
+import re
 from common.requester import DelayedRequester
 from common.storage import image
 
@@ -102,101 +101,100 @@ def _get_response(query_param, headers, endpoint=ENDPOINT, retries=RETRIES):
         return response_json, total_images
 
 
-def _handle_response(objectData, _objectID):
-    metaData = {}
-    imgURL = ''
+def _handle_response(object_data, _object_id):
+    meta_data = {}
+    img_url = ''
     width = ''
     height = ''
-    foreignID = ''
-    foreignURL = ''
+    foreign_id = ''
+    foreign_url = ''
     title = ''
     creator = ''
     license = ''
     version = ''
-    rightsInfo = objectData.get('rights_type')
-    if rightsInfo is None or 'creative commons' not in rightsInfo.get('name').lower():
+    rights_info = object_data.get('rights_type')
+    if rights_info is None or 'creative commons' not in rights_info.get('name').lower():
         logging.warning('License not detected!')
         return None
 
-    licenseURL = _get_license_url(rightsInfo)
-    if licenseURL is None:
+    license_url = _get_license_url(rights_info)
+    if license_url is None:
         return None
 
-    title = objectData.get('title', '')
+    title = object_data.get('title', '')
 
     # the API doesnt provide a direct link to the landing page. Exception provided below
-    foreignURL = 'https://www.brooklynmuseum.org/opencollection/objects/{}'.format(_objectID)
-    artists = objectData.get('artists')
-    artistInfo = [{'name': artist['name'], 'nationality': artist['nationality']} for artist in artists]
-    metaData = _get_metadata(objectData)
-    if artistInfo:
-        creator = artistInfo[0].get('name')
-        metaData['artist_info'] = artistInfo
+    foreign_url = 'https://www.brooklynmuseum.org/opencollection/objects/{}'.format(_object_id)
+    artists = object_data.get('artists')
+    artist_info = [{'name': artist['name'], 'nationality': artist['nationality']} for artist in artists]
+    meta_data = _get_meta_data(object_data)
+    if artist_info:
+        creator = artist_info[0].get('name')
+        meta_data['artist_info'] = artist_info
 
-    
-    imageInfo = objectData.get('images')
-    if not imageInfo:
-        logging.warning('Image not detected for object {}'.format(_objectID))
+    image_info = object_data.get('images')
+    if not image_info:
+        logging.warning('Image not detected for object {}'.format(_object_id))
         return None
 
-    if len(imageInfo) > 1:
-        metaData['set'] = foreignURL
+    if len(image_info) > 1:
+        meta_data['set'] = foreign_url
 
-    for img in imageInfo:
-        foreignID = img.get('id', '')
-        imgURL = img.get('largest_derivative_url', '')
+    for img in image_info:
+        foreign_id = img.get('id', '')
+        img_url = img.get('largest_derivative_url', '')
 
-        if not imgURL:
-            logging.warning('Image not detected for object {}'.format(_objectID))
+        if not img_url:
+            logging.warning('Image not detected for object {}'.format(_object_id))
             continue
 
         thumbnail = img.get('standard_size_url', '')
-        lgDeriv = img.get('largest_derivative')
-        if lgDeriv:
+        lg_deriv = img.get('largest_derivative')
+        if lg_deriv:
             # get the image dimensions
             derivatives = img.get('derivatives')
             if type(derivatives) is list:
-                dimensions = [(dim.get('width'), dim.get('height')) for dim in derivatives if str(dim.get('size')) == str(lgDeriv)]
+                dimensions = [(dim.get('width'), dim.get('height')) for dim in derivatives if str(dim.get('size')) == str(lg_deriv)]
                 width = dimensions[0][0]
                 height = dimensions[0][1]
 
-        metaData['caption'] = img.get('caption')
-        metaData['credit'] = img.get('credit')
+        meta_data['caption'] = img.get('caption')
+        meta_data['credit'] = img.get('credit')
 
         total_images = image_store.add_item(
-            foreign_landing_url=foreignURL,
-            image_url=imgURL,
+            foreign_landing_url=foreign_url,
+            image_url=img_url,
             thumbnail_url=thumbnail,
-            license_=licenseURL,
+            license_=license_url,
             license_version=version,
             width=width,
             height=height,
             creator=creator,
             title=title,
-            meta_data=metaData
+            meta_data=meta_data
             )
 
     return total_images
 
 
-def _get_license_url(rightsInfo):
-    if "creative commons" not in rightsInfo.get("name").lower():
+def _get_license_url(rights_info):
+    if "creative commons" not in rights_info.get("name").lower():
         return None
-    licenseURL = re.search('https://creativecommons.org/licenses/[^\s]+',
-                            rightsInfo.get('description'))
-    licenseURL = licenseURL.group(0).strip()
-    return licenseURL
+    license_url = re.search('https://creativecommons.org/licenses/[^\s]+',
+                            rights_info.get('description'))
+    license_url = license_url.group(0).strip()
+    return license_url
 
 
-def _get_metadata(objectData):
-    metaData['credit_line'] = objectData.get('credit_line')
-    metaData['medium'] = objectData.get('medium')
-    metaData['description'] = objectData.get('description')
-    metaData['date'] = objectData.get('object_date')
-    metaData['credit_line'] = objectData.get('period')
-    metaData['classification'] = objectData.get('classification')
-    metaData['accession_number'] = objectData.get('accession_number')
-    return metaData
+def _get_meta_data(object_data):
+    meta_data['credit_line'] = object_data.get('credit_line')
+    meta_data['medium'] = object_data.get('medium')
+    meta_data['description'] = object_data.get('description')
+    meta_data['date'] = object_data.get('object_date')
+    meta_data['credit_line'] = object_data.get('period')
+    meta_data['classification'] = object_data.get('classification')
+    meta_data['accession_number'] = object_data.get('accession_number')
+    return meta_data
 
 
 def _extract_response_json(response):
