@@ -1,9 +1,9 @@
 import logging as log
 import time
-import multiprocessing
 import uuid
 import requests as re
 from airflow.hooks.postgres_hook import PostgresHook
+from psycopg2.extras import Json, DictCursor
 from urllib.parse import urlparse
 from tld import get_tld
 from tld.utils import update_tld_names
@@ -289,30 +289,18 @@ def clean_image_data(
 
         log.info('Fetching first batch')
         batch = iter_cur.fetchmany(size=CLEANUP_BUFFER_SIZE)
-        jobs = []
-        num_workers = multiprocessing.cpu_count()
         num_cleaned = 0
         while batch:
-            # Divide updates into jobs for parallel execution.
             batch_start_time = time.time()
             temp_table = 'temp_import_{}'.format(table)
-            job_size = int(len(batch) / num_workers)
-            last_end = -1
-            log.info('Dividing work')
-            for n in range(1, num_workers + 1):
-                log.info('Scheduling job {}'.format(n))
-                start = last_end + 1
-                end = job_size * n
-                last_end = end
-                # Arguments for parallel _clean_data_worker calls
-                jobs.append(
-                    (batch[start:end], temp_table, provider_config)
-                )
-            pool = multiprocessing.Pool(processes=num_workers)
-            log.info('Starting {} cleaning jobs'.format(len(jobs)))
+            log.info('Starting {} cleaning jobs'.format(len(batch)))
             conn.commit()
-            pool.starmap(_clean_data_worker, jobs)
-            pool.close()
+            _clean_data_worker(
+                batch,
+                temp_table,
+                provider_config,
+                postgres_conn_id
+            )
             num_cleaned += len(batch)
             batch_end_time = time.time()
             rate = len(batch) / (batch_end_time - batch_start_time)
@@ -320,7 +308,6 @@ def clean_image_data(
             log.info(
                 'Fetching next batch. Num records cleaned so far: {}'
                 .format(num_cleaned))
-            jobs = []
             batch = iter_cur.fetchmany(size=CLEANUP_BUFFER_SIZE)
     conn.commit()
     iter_cur.close()
