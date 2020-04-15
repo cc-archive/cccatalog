@@ -16,7 +16,7 @@ ADD ./requirements.txt ${AIRFLOW_HOME}
 ADD ./wait_for_db.py ${AIRFLOW_HOME}
 ADD ./dags ${AIRFLOW_HOME}/dags
 
-RUN pip install --user -r requirements.txt
+RUN pip install --user -r requirements_dev.txt
 
 CMD python wait_for_db.py && \
   airflow initdb && \
