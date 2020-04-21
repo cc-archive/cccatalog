@@ -5,11 +5,8 @@ import requests as re
 from airflow.hooks.postgres_hook import PostgresHook
 from psycopg2.extras import Json, DictCursor
 from urllib.parse import urlparse
-from tld import get_tld
-from tld.utils import update_tld_names
-from tld.exceptions import TldBadUrl
+import tldextract
 import os
-update_tld_names()
 
 """
 Functions for processing data. This includes cleaning up malformed
@@ -76,13 +73,8 @@ class CleanupFunctions:
         """
         parsed = urlparse(url)
         if parsed.scheme == '':
-            try:
-                _tld = get_tld('https://' + url, as_object=True)
-                _tld = _tld.subdomain + '.' + _tld.domain + '.' + _tld.tld
-                _tld = str(_tld)
-            except TldBadUrl:
-                _tld = 'unknown'
-                log.info('Failed to parse url {}'.format(url))
+            _tld = tldextract.extract(url)
+            _tld = f'{_tld.subdomain}.{_tld.domain}.{_tld.suffix}'
             try:
                 tls_supported = tls_support[_tld]
             except KeyError:
