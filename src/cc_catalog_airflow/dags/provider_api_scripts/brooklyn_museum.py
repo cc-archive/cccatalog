@@ -3,7 +3,7 @@ Content Provider:       Brooklyn Museum
 
 ETL Process:            Use the API to identify all CC licensed artworks.
 
-Output:                 TSV file containing the images and respective meta-data.
+Output:                 TSV file containing the images and respective meta-data
 
 Notes:                  https://www.brooklynmuseum.org/opencollection/api
                         3000 calls per day (per API Key)
@@ -14,6 +14,10 @@ import re
 from common.requester import DelayedRequester
 from common.storage import image
 
+logging.basicConfig(
+    format='%(asctime)s - %(name)s - %(levelname)s:  %(message)s',
+    level=logging.INFO
+)
 logger = logging.getLogger(__name__)
 
 DELAY = 3.0  # time delay (in seconds)
@@ -22,8 +26,6 @@ API_KEY = os.getenv('BROOKLYN_MUSEUM_API_KEY')
 PROVIDER = 'brooklynmuseum'
 LIMIT = 10
 ENDPOINT = 'https://www.brooklynmuseum.org/api/v2/'
-
-logging.basicConfig(format='%(asctime)s: [%(levelname)s - Brooklyn Museum API] =======> %(message)s', level=logging.INFO)
 
 delayed_requester = DelayedRequester(DELAY)
 image_store = image.ImageStore(provider=PROVIDER)
@@ -45,13 +47,17 @@ def main():
 
     while condition:
         query_param = _build_query_param(offset)
-        endpoint = '{0}object?has_images=1&rights_type_permissive=1&limit={1}&offset={2}'.format(ENDPOINT, LIMIT, offset)
-        response_json, total_images = _get_response(query_param, headers=headers, endpoint=endpoint)
+        response_json, total_images = _get_response(
+            query_param,
+            headers=headers)
         if response_json is not None and total_images != 0:
             objIDs = list(obj['id'] for obj in response_json['data'])
             for obj in objIDs:
                 endpoint = '{0}object/{1}'.format(ENDPOINT, obj)
-                response = delayed_requester.get(endpoint, params=None, headers=headers)
+                response = delayed_requester.get(
+                    endpoint,
+                    params=None,
+                    headers=headers)
                 result = _extract_response_json(response)
                 image_count = _handle_response(result, obj)
             logger.info(f'Total images till now {image_count}')
@@ -77,7 +83,7 @@ def _get_response(query_param, headers, endpoint=ENDPOINT, retries=RETRIES):
     for tries in range(retries):
         response = delayed_requester.get(
                     endpoint,
-                    params=None,
+                    query_param,
                     headers=headers
                     )
         if response.status_code == 200 and response is not None:
@@ -110,10 +116,11 @@ def _handle_response(object_data, _object_id):
     foreign_url = ''
     title = ''
     creator = ''
-    license = ''
+    license_url = ''
     version = ''
     rights_info = object_data.get('rights_type')
-    if rights_info is None or 'creative commons' not in rights_info.get('name').lower():
+    if rights_info is None or \
+            'creative commons' not in rights_info.get('name').lower():
         logging.warning('License not detected!')
         return None
 
@@ -122,11 +129,12 @@ def _handle_response(object_data, _object_id):
         return None
 
     title = object_data.get('title', '')
-
-    # the API doesnt provide a direct link to the landing page. Exception provided below
-    foreign_url = 'https://www.brooklynmuseum.org/opencollection/objects/{}'.format(_object_id)
+    foreign_url = 'https://www.brooklynmuseum.org/' + \
+        'opencollection/objects/{}'.format(_object_id)
     artists = object_data.get('artists')
-    artist_info = [{'name': artist['name'], 'nationality': artist['nationality']} for artist in artists]
+    artist_info = [{'name': artist['name'],
+                    'nationality': artist['nationality']}
+                   for artist in artists]
     meta_data = _get_meta_data(object_data)
     if artist_info:
         creator = artist_info[0].get('name')
@@ -145,7 +153,8 @@ def _handle_response(object_data, _object_id):
         img_url = img.get('largest_derivative_url', '')
 
         if not img_url:
-            logging.warning('Image not detected for object {}'.format(_object_id))
+            logging.warning(
+                'Image not detected for object {}'.format(_object_id))
             continue
 
         thumbnail = img.get('standard_size_url', '')
@@ -154,7 +163,9 @@ def _handle_response(object_data, _object_id):
             # get the image dimensions
             derivatives = img.get('derivatives')
             if type(derivatives) is list:
-                dimensions = [(dim.get('width'), dim.get('height')) for dim in derivatives if str(dim.get('size')) == str(lg_deriv)]
+                dimensions = [(dim.get('width'), dim.get('height'))
+                              for dim in derivatives
+                              if str(dim.get('size')) == str(lg_deriv)]
                 width = dimensions[0][0]
                 height = dimensions[0][1]
 
@@ -187,6 +198,7 @@ def _get_license_url(rights_info):
 
 
 def _get_meta_data(object_data):
+    meta_data = {}
     meta_data['credit_line'] = object_data.get('credit_line')
     meta_data['medium'] = object_data.get('medium')
     meta_data['description'] = object_data.get('description')
