@@ -47,12 +47,14 @@ def main():
         if type(icon_batch) == list:
             if len(icon_batch) > 0:
                 image_count = _process_icon_batch(icon_batch)
+                logger.info(f"Images collected in this batch: {image_count}")
                 offset += LIMIT
             else:
                 condition = False
         else:
             condition = False
     image_store.commit()
+    logger.info(f"total images : f{image_store.total_images}")
 
 
 def _get_query_param(
