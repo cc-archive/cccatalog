@@ -48,7 +48,6 @@ def main():
             if len(icon_batch) > 0:
                 image_count = _process_icon_batch(icon_batch)
                 offset += LIMIT
-                condition = False
             else:
                 condition = False
         else:
@@ -99,6 +98,8 @@ def _process_icon_batch(icon_batch):
         icon_data = _request_handler(
             endpoint=ITEM_ENDPOINT+str(icon_id)
         )
+        if icon_data is None:
+            continue
 
         iconset = icon_data.get("iconset")
         if iconset is None:
