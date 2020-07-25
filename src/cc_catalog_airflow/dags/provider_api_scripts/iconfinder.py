@@ -11,7 +11,7 @@ logging.basicConfig(
 logger = logging.getLogger(__name__)
 
 LIMIT = 100
-DELAY = 1.0
+DELAY = 5.0
 RETRIES = 3
 PROVIDER = "iconfinder"
 SEARCH_ENDPOINT = "https://api.iconfinder.com/v4/icons/search"
