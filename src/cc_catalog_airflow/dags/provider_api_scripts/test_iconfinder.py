@@ -128,7 +128,7 @@ def test_process_icon_batch_success():
         with patch.object(
                 icf.image_store,
                 'add_item') as mock_item:
-            actual_image_count = icf._process_icon_batch(icon_batch)
+            icf._process_icon_batch(icon_batch)
 
     assert mock_item.call_count == 1
 
@@ -148,10 +148,9 @@ def test_process_icon_batch_no_image():
         with patch.object(
                 icf.image_store,
                 'add_item') as mock_item:
-            actual_image_count = icf._process_icon_batch(icon_batch)
+            icf._process_icon_batch(icon_batch)
 
     assert mock_item.call_count == 0
-    assert actual_image_count == 0
 
 
 def test_process_icon_batch_failure():
@@ -167,10 +166,9 @@ def test_process_icon_batch_failure():
         with patch.object(
                 icf.image_store,
                 'add_item') as mock_item:
-            actual_image_count = icf._process_icon_batch(icon_batch)
+            icf._process_icon_batch(icon_batch)
 
     assert mock_item.call_count == 0
-    assert actual_image_count == 0
 
 
 def test_get_license_success():
