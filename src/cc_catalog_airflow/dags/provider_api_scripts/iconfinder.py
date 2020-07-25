@@ -11,12 +11,12 @@ logging.basicConfig(
 logger = logging.getLogger(__name__)
 
 LIMIT = 100
-DELAY = 5.0
+DELAY = 1.0
 RETRIES = 3
 PROVIDER = "iconfinder"
 SEARCH_ENDPOINT = "https://api.iconfinder.com/v4/icons/search"
 ITEM_ENDPOINT = "https://api.iconfinder.com/v4/icons/"
-API_KEY = os.getenv("ICONFINDER_KEY")
+API_KEY = os.getenv("ICONFINDER_API_KEY")
 
 delay_request = DelayedRequester(delay=DELAY)
 image_store = ImageStore(provider=PROVIDER)
@@ -44,17 +44,16 @@ def main():
             params=query_param
         )
         icon_batch = response_json.get("icons")
-        if type(icon_batch) == list:
-            if len(icon_batch) > 0:
-                image_count = _process_icon_batch(icon_batch)
-                logger.info(f"Images collected in this batch: {image_count}")
-                offset += LIMIT
-            else:
-                condition = False
+        if type(icon_batch) == list and len(icon_batch) > 0:
+            _process_icon_batch(icon_batch)
+            logger.info(
+                f"Images collected in this batch: {image_store.total_images}"
+            )
+            offset += LIMIT
         else:
             condition = False
     image_store.commit()
-    logger.info(f"total images : f{image_store.total_images}")
+    logger.info(f"total images : {image_store.total_images}")
 
 
 def _get_query_param(
@@ -78,19 +77,20 @@ def _request_handler(
             params=params,
             headers=headers
         )
-        try:
-            response_json = response.json()
-            if type(response_json) is not None:
+        if response.status_code == 200:
+            try:
+                response_json = response.json()
                 break
-        except Exception as e:
-            logger.error(f"Request failed due to {e}")
+            except Exception as e:
+                logger.error(f"Request failed due to {e}")
+                response_json = None
+        else:
             response_json = None
 
     return response_json
 
 
 def _process_icon_batch(icon_batch):
-    image_count = 0
     for icon in icon_batch:
 
         icon_id = icon.get("icon_id")
@@ -124,7 +124,7 @@ def _process_icon_batch(icon_batch):
             iconset.get("author")
         )
         meta_data = _get_metadata(icon_data)
-        image_count = image_store.add_item(
+        image_store.add_item(
             foreign_identifier=icon_id,
             foreign_landing_url=foreign_landing_url,
             image_url=image_url,
@@ -135,8 +135,6 @@ def _process_icon_batch(icon_batch):
             creator=creator,
             meta_data=meta_data
         )
-
-    return image_count
 
 
 def _get_license(license_):
@@ -168,6 +166,9 @@ def _get_creator(author):
     creator = None
     if type(author) == dict:
         creator = author.get("name")
+
+    if creator is None:
+        logger.warning("No creator found")
     return creator
 
 
