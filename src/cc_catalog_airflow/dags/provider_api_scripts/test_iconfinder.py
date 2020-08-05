@@ -133,26 +133,6 @@ def test_process_icon_batch_success():
     assert mock_item.call_count == 1
 
 
-def test_process_icon_batch_no_image():
-    icon_batch = _get_resource_json("icon_batch.json")
-    icon_detail = _get_resource_json("bad_icon_response.json")
-
-    r = requests.Response()
-    r.status_code = 200
-    r.json = MagicMock(return_value=icon_detail)
-
-    with patch.object(
-            icf.delay_request,
-            'get',
-            return_value=r) as mock_call:
-        with patch.object(
-                icf.image_store,
-                'add_item') as mock_item:
-            icf._process_icon_batch(icon_batch)
-
-    assert mock_item.call_count == 0
-
-
 def test_process_icon_batch_failure():
     icon_batch = _get_resource_json("icon_batch.json")
 

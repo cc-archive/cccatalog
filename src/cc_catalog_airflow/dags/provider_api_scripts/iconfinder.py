@@ -109,16 +109,13 @@ def _process_icon_batch(icon_batch):
         license_url = _get_license(
             iconset.get("license")
         )
-        if license_url is None:
-            continue
+
         foreign_landing_url = (
             "https://www.iconfinder.com/icons/" + str(icon_id)
         )
         image_url, thumbnail_url, height, width = _get_images(
             icon_data.get("raster_sizes")
         )
-        if image_url is None:
-            continue
 
         creator = _get_creator(
             iconset.get("author")
