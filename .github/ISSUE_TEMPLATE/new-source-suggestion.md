@@ -1,7 +1,7 @@
 ---
 name: New source suggestion
 about: Suggest a site/platform with CC-licensed content to include in CC Search
-labels: "🛠 goal: addition, 🚦 status: awaiting triage"
+labels: "🛠 goal: addition, 🚦 status: awaiting triage, 💻 aspect: code, 🟩 priority: low"
 title: "[Source suggestion] <Replace this with actual title>"
 ---
 

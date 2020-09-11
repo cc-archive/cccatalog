@@ -1,7 +1,7 @@
 ---
 name: Image provider API integration request
 about: Tell us about an API providing CC-licensed images
-labels: "🛠 goal: addition, 🚦 status: awaiting triage"
+labels: "🛠 goal: addition, 🚦 status: awaiting triage, 💻 aspect: code, 🟩 priority: low"
 title: "[API integration] <Replace this with actual title>"
 ---
 
