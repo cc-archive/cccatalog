@@ -1,25 +1,30 @@
 ---
-name: Bug Report
+name: Bug report
 about: Create a report to help us improve
-labels: bug, awaiting triage
-title: "[Bug] Replace with Title"
+labels: "🛠 goal: fix, 🚦 status: awaiting triage, 💻 aspect: code, 🟧 priority: high"
+title: '[Bug] <Replace this with actual title>'
 ---
 
-## Bug Description
-<!-- Clearly and concisely describe the bug -->
+<!-- This template must manually be kept in sync with creativecommons/.github -->
+## Description
+<!-- Concisely describe the bug. -->
 
-## To Reproduce
+## Reproduction
 <!-- Provide detailed steps to reproduce the bug -->
-1. Go to '...'
-2. Click on '...'
-3. Scroll down to '...'
-4. See error
+1. <!-- Step 1 ... -->
+2. <!-- Step 2 ... -->
+3. <!-- Step 3 ... -->
+4. See error.
 
-## Expected behavior
-<!-- Describe what you expected to happen. -->
+## Expectation
+<!-- Concisely describe what you expected to happen. -->
 
 ## Screenshots
-<!-- If applicable, add screenshots to help explain your problem. -->
+<!-- Add screenshots to show the problem; or delete the section entirely. -->
 
 ## Additional context
-<!-- Add any other context about the problem here. -->
+<!-- Add any other context about the problem here; or delete the section entirely. -->
+
+## Resolution
+<!-- Replace the [ ] with [x] to check the box. -->
+- [ ] I would be interested in resolving this bug.
