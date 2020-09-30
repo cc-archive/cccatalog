@@ -1,7 +1,7 @@
 ---
 name: Image provider API integration request
 about: Tell us about an API providing CC-licensed images
-labels: "🛠 goal: addition, 🚦 status: awaiting triage, 💻 aspect: code, 🟩 priority: low"
+labels: "🛠 goal: addition, 🚦 status: awaiting triage, 🗂 aspect: research, 🟩 priority: low"
 title: "[API integration] <Replace this with actual title>"
 ---
 
@@ -24,7 +24,7 @@ title: "[API integration] <Replace this with actual title>"
 
 No development should be done on a provider API script until the following info is gathered.
 
-<!-- Replace  the [ ] with [x] to check the boxes. --> 
+<!-- Replace  the [ ] with [x] to check the boxes. -->
 - [ ] Verify there is a way to retrieve the entire relevant portion of the provider's collection in a systematic way via their API.
 - [ ] Verify the API provides license info viz. license type and version (license URL provides both, and is preferred).
 - [ ] Verify the API provides stable direct links to individual works.
@@ -63,7 +63,7 @@ No development should be done on a provider API script until the following info 
 ### Examples
 <!-- Do not modify this section. -->
 
-For example provider API scripts and accompanying test suites, please see any 
+For example provider API scripts and accompanying test suites, please see any
 of the following pairs.
 
 - `src/cc_catalog_airflow/dags/provider_api_scripts/flickr.py` and
