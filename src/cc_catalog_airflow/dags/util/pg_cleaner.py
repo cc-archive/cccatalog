@@ -5,10 +5,15 @@ class.
 """
 from collections import namedtuple
 import logging
+from textwrap import dedent
+import time
+
+from airflow.hooks.postgres_hook import PostgresHook
 
 from provider_api_scripts.common.storage import image
 from util import tsv_cleaner
 from util.loader import column_names as col
+from util.loader.sql import IMAGE_TABLE_NAME
 
 logger = logging.getLogger(__name__)
 
@@ -81,7 +86,13 @@ class ImageCleaner(image.ImageStore):
             watermarked=watermarked,
             source=source
         )
-        return self._prepare_valid_row_list(image)
+        cleaned_row_list = [
+            self._finish_string(s) for s in self._prepare_valid_row_list(image)
+        ]
+        return cleaned_row_list
+
+    def _finish_string(self, s):
+        return f"""'{s.replace("'", "''")}'""" if s is not None else "null"
 
 
 class ImageCleanerDict(dict):
@@ -92,6 +103,57 @@ class ImageCleanerDict(dict):
 
 
 _image_cleaner_dict = ImageCleanerDict()
+
+
+def clean_rows(postgres_conn_id, prefix):
+    """
+    This function runs all rows whose identifier starts with the given
+    prefix through the ImageCleaner class, and updates them with the
+    result.
+    """
+    start_time = time.time()
+    postgres = PostgresHook(postgres_conn_id=postgres_conn_id)
+    select_query = _get_select_query_from_prefix(prefix)
+    selected_rows = postgres.get_records(select_query)
+    total_cleaned = 0
+    for record in selected_rows:
+        clean_record = _get_clean_row_tuple(record)
+        update_query = _get_update_query_for_record(record[0], clean_record)
+        postgres.run(update_query)
+        total_cleaned += 1
+
+    end_time = time.time()
+    logger.info(
+        f"{total_cleaned} records cleaned in {end_time - start_time} seconds"
+    )
+
+
+def _get_select_query_from_prefix(prefix, image_table=IMAGE_TABLE_NAME):
+    """
+    This creates the necessary string to select all rows from the image
+    table where the identifier matches the given prefix.
+    """
+    min_base_uuid = '00000000-0000-0000-0000-000000000000'
+    max_base_uuid = 'ffffffff-ffff-ffff-ffff-ffffffffffff'
+    min_uuid = prefix + min_base_uuid[len(prefix):]
+    max_uuid = prefix + max_base_uuid[len(prefix):]
+    select_query = dedent(
+        f"""
+        SELECT
+          {col.IDENTIFIER}, {col.CREATED_ON}, {col.UPDATED_ON},
+          {col.INGESTION_TYPE}, {col.PROVIDER}, {col.SOURCE}, {col.FOREIGN_ID},
+          {col.LANDING_URL}, {col.DIRECT_URL}, {col.THUMBNAIL}, {col.WIDTH},
+          {col.HEIGHT}, {col.FILESIZE}, {col.LICENSE}, {col.LICENSE_VERSION},
+          {col.CREATOR}, {col.CREATOR_URL}, {col.TITLE}, {col.META_DATA},
+          {col.TAGS}, {col.WATERMARKED}, {col.LAST_SYNCED}, {col.REMOVED}
+        FROM {image_table}
+        WHERE
+          {col.IDENTIFIER}>='{min_uuid}'::uuid
+          AND
+          {col.IDENTIFIER}<='{max_uuid}'::uuid;
+        """
+    )
+    return select_query
 
 
 def _get_clean_row_tuple(orig_row_tuple):
@@ -120,25 +182,35 @@ def _get_clean_row_tuple(orig_row_tuple):
         watermarked=dirty_row.watermarked,
         source=dirty_row.source,
     )
-    clean_image = image.Image(*clean_fields)
-    clean_row = dirty_row._replace(
-        provider=clean_image.provider,
-        source=clean_image.source,
-        foreign_identifier=clean_image.foreign_identifier,
-        foreign_landing_url=clean_image.foreign_landing_url,
-        image_url=clean_image.image_url,
-        thumbnail_url=clean_image.thumbnail_url,
-        width=clean_image.width,
-        height=clean_image.height,
-        filesize=clean_image.filesize,
-        license_=clean_image.license_,
-        license_version=clean_image.license_version,
-        creator=clean_image.creator,
-        creator_url=clean_image.creator_url,
-        title=clean_image.title,
-        meta_data=clean_image.meta_data,
-        tags=clean_image.tags,
-        watermarked=clean_image.watermarked,
-    )
+    return image.Image(*clean_fields)
 
-    return clean_row
+
+def _get_update_query_for_record(
+        identifier, record, image_table=IMAGE_TABLE_NAME
+):
+    update_query = dedent(
+        f"""
+        UPDATE {image_table}
+        SET
+          {col.PROVIDER}={record.provider},
+          {col.SOURCE}={record.source},
+          {col.FOREIGN_ID}={record.foreign_identifier},
+          {col.LANDING_URL}={record.foreign_landing_url},
+          {col.DIRECT_URL}={record.image_url},
+          {col.THUMBNAIL}={record.thumbnail_url},
+          {col.WIDTH}={record.width},
+          {col.HEIGHT}={record.height},
+          {col.FILESIZE}={record.filesize},
+          {col.LICENSE}={record.license_},
+          {col.LICENSE_VERSION}={record.license_version},
+          {col.CREATOR}={record.creator},
+          {col.CREATOR_URL}={record.creator_url},
+          {col.TITLE}={record.title},
+          {col.META_DATA}={record.meta_data},
+          {col.TAGS}={record.tags},
+          {col.WATERMARKED}={record.watermarked}
+        WHERE {col.IDENTIFIER}='{identifier}'::uuid;
+        """
+    )
+    return update_query
+
