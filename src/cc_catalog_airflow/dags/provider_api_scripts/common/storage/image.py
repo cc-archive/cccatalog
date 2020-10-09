@@ -320,9 +320,15 @@ class ImageStore:
 
     def _create_tsv_row(
             self,
-            image,
-            columns=_IMAGE_TSV_COLUMNS
+            image
     ):
+        row_list = self._prepare_valid_row_list(image)
+        if row_list is not None:
+            return '\t'.join(
+                [s if s is not None else '\\N' for s in row_list]
+            ) + '\n'
+
+    def _prepare_valid_row_list(self, image, columns=_IMAGE_TSV_COLUMNS):
         row_length = len(columns)
         prepared_strings = [
             columns[i].prepare_string(image[i]) for i in range(row_length)
@@ -332,10 +338,7 @@ class ImageStore:
             if columns[i].REQUIRED and prepared_strings[i] is None:
                 logger.warning(f'Row missing required {columns[i].NAME}')
                 return None
-        else:
-            return '\t'.join(
-                [s if s is not None else '\\N' for s in prepared_strings]
-            ) + '\n'
+        return prepared_strings
 
     def _flush_buffer(self):
         buffer_length = len(self._image_buffer)
