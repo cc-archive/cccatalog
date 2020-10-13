@@ -105,11 +105,11 @@ class ImageCleanerDict(dict):
 _image_cleaner_dict = ImageCleanerDict()
 
 
-def clean_rows(postgres_conn_id, prefix):
+def clean_rows(postgres_conn_id, prefix, image_table=IMAGE_TABLE_NAME):
     """
-    This function runs all rows whose identifier starts with the given
-    prefix through the ImageCleaner class, and updates them with the
-    result.
+    This function runs all rows from the image table whose identifier
+    starts with the given prefix through the ImageCleaner class, and
+    updates them with the result.
     """
     start_time = time.time()
     postgres = PostgresHook(postgres_conn_id=postgres_conn_id)
