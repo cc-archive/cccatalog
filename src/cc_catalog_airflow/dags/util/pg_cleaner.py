@@ -145,8 +145,8 @@ def _get_select_query_from_prefix(prefix, image_table):
     This creates the necessary string to select all rows from the image
     table where the identifier matches the given prefix.
     """
-    min_base_uuid = '00000000-0000-0000-0000-000000000000'
-    max_base_uuid = 'ffffffff-ffff-ffff-ffff-ffffffffffff'
+    min_base_uuid = "00000000-0000-0000-0000-000000000000"
+    max_base_uuid = "ffffffff-ffff-ffff-ffff-ffffffffffff"
     min_uuid = prefix + min_base_uuid[len(prefix):]
     max_uuid = prefix + max_base_uuid[len(prefix):]
     select_query = dedent(
@@ -225,4 +225,3 @@ def _get_update_query_for_record(
         """
     )
     return update_query
-
