@@ -5,6 +5,7 @@ class.
 """
 from collections import namedtuple
 import logging
+import sys
 from textwrap import dedent
 import time
 
@@ -113,22 +114,33 @@ def clean_rows(postgres_conn_id, prefix, image_table=IMAGE_TABLE_NAME):
     """
     start_time = time.time()
     postgres = PostgresHook(postgres_conn_id=postgres_conn_id)
-    select_query = _get_select_query_from_prefix(prefix)
+    select_query = _get_select_query_from_prefix(prefix, image_table)
     selected_rows = postgres.get_records(select_query)
     total_cleaned = 0
     for record in selected_rows:
-        clean_record = _get_clean_row_tuple(record)
-        update_query = _get_update_query_for_record(record[0], clean_record)
-        postgres.run(update_query)
-        total_cleaned += 1
+        try:
+            clean_record = _get_clean_row_tuple(record)
+            update_query = _get_update_query_for_record(
+                record[0], clean_record
+            )
+            postgres.run(update_query)
+            total_cleaned += 1
+        except Exception as e:
+            logger.error(
+                f"The record {record} could not be cleaned."
+                f"\nError: {e}"
+                "\nAbort!"
+            )
+            sys.exit(1)
 
     end_time = time.time()
     logger.info(
         f"{total_cleaned} records cleaned in {end_time - start_time} seconds"
     )
+    return total_cleaned
 
 
-def _get_select_query_from_prefix(prefix, image_table=IMAGE_TABLE_NAME):
+def _get_select_query_from_prefix(prefix, image_table):
     """
     This creates the necessary string to select all rows from the image
     table where the identifier matches the given prefix.
