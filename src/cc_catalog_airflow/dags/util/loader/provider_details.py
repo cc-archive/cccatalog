@@ -22,6 +22,7 @@ RAWPIXEL_DEFAULT_PROVIDER = 'rawpixel'
 SCIENCE_DEFAULT_PROVIDER = 'sciencemuseum'
 STATENS_DEFAULT_PROVIDER = 'statensmuseum'
 WALTERS_DEFAULT_PROVIDER = 'waltersartmuseum'
+STW_DEFAULT_PROVIDER = 'scantheworld'
 
 # Flickr parameters
 FLICKR_SUB_PROVIDERS = {
