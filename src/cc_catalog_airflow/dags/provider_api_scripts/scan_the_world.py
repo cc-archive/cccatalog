@@ -15,7 +15,8 @@ from common.storage.image import ImageStore
 from util.loader import provider_details as prov
 
 logging.basicConfig(
-    format="%(asctime)s - %(name)s - %(levelname)s:  %(message)s", level=logging.INFO
+    format="%(asctime)s - %(name)s - %(levelname)s:  %(message)s",
+    level=logging.INFO
 )
 logger = logging.getLogger(__name__)
 
@@ -37,7 +38,8 @@ DEFAULT_QUERY_PARAM = {"cat": 112, "rec_cat": 1, "page": 1, "per_page": LIMIT}
 
 LICENSES = {
     "Creative Commons - Public Domain": ("cc0", "1.0"),
-    "Creative Commons - Attribution - Noncommercial - ShareAlike": ("by-nc-sa", "2.0"),
+    "Creative Commons - Attribution - Noncommercial - ShareAlike":
+    ("by-nc-sa", "2.0"),
 }
 
 
@@ -64,7 +66,8 @@ def _get_query_param(page, default_query_param=DEFAULT_QUERY_PARAM):
     return query_param
 
 
-def _get_object_list(query_param, headers=HEADERS, endpoint=ENDPOINT, retries=RETRIES):
+def _get_object_list(query_param, headers=HEADERS,
+                     endpoint=ENDPOINT, retries=RETRIES):
     for r in range(retries):
         response = delayed_requester.get(
             endpoint,
@@ -74,7 +77,8 @@ def _get_object_list(query_param, headers=HEADERS, endpoint=ENDPOINT, retries=RE
         logger.debug("response.status_code: {response.status_code}")
         if response is not None and response.status_code == 200:
             break
-    if (r == retries - 1) and (response is None or response.status_code != 200):
+    if (r == retries - 1) and
+    (response is None or response.status_code != 200):
         logger.warning("No more tries remaining. Returning Nonetypes.")
         return None
     response_json = _extract_response_json(response)
