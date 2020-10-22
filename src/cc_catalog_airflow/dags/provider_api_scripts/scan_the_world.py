@@ -77,8 +77,7 @@ def _get_object_list(query_param, headers=HEADERS,
         logger.debug("response.status_code: {response.status_code}")
         if response is not None and response.status_code == 200:
             break
-    if (r == retries - 1) and
-    (response is None or response.status_code != 200):
+    if (r == retries - 1) and (response is None or response.status_code != 200):
         logger.warning("No more tries remaining. Returning Nonetypes.")
         return None
     response_json = _extract_response_json(response)
