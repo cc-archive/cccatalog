@@ -9,7 +9,6 @@ Notes:                  https://www.myminifactory.com/api/v2/
 
 import os
 import logging
-import lxml.html as html
 from common.requester import DelayedRequester
 from common.storage.image import ImageStore
 from util.loader import provider_details as prov
@@ -51,7 +50,7 @@ def main():
         query_param = _get_query_param(page=page)
         object_list = _get_object_list(query_param=query_param)
         if type(object_list) == list and len(object_list) > 0:
-            total_images = _process_object_list(object_list)
+            _ = _process_object_list(object_list)
             logger.debug(f"Images till now {image_store.total_images}")
             page = page + 1
         else:
