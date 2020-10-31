@@ -22,6 +22,7 @@ RAWPIXEL_DEFAULT_PROVIDER = 'rawpixel'
 SCIENCE_DEFAULT_PROVIDER = 'sciencemuseum'
 STATENS_DEFAULT_PROVIDER = 'statensmuseum'
 WALTERS_DEFAULT_PROVIDER = 'waltersartmuseum'
+NOUN_PROJECT_DEFAULT_PROVIDER = 'thenounproject'
 
 # Flickr parameters
 FLICKR_SUB_PROVIDERS = {

@@ -12,3 +12,4 @@ pytest
 pytest-cov
 pytest-socket
 pytest-mock
+requests-oauthlib
