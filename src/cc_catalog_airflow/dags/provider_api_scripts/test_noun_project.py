@@ -106,7 +106,7 @@ def test_get_icons_list_from_collection_retries_with_none_response():
     ) as mock_get:
         nounpro._get_icons_list_from_collection(collection='some_collection', retries=3)
 
-    assert mock_get.call_count == 2
+    assert mock_get.call_count == 1
 
 
 def test_get_icons_list_from_collection_retries_with_non_ok_response():
@@ -121,7 +121,7 @@ def test_get_icons_list_from_collection_retries_with_non_ok_response():
     ) as mock_get:
         nounpro._get_icons_list_from_collection(collection='some_collection')
 
-    assert mock_get.call_count == 2
+    assert mock_get.call_count == 4
 
 
 def test_get_icons_list_from_collection_with_full_response():
@@ -136,8 +136,8 @@ def test_get_icons_list_from_collection_with_full_response():
     ) as mock_get:
         icons_list = nounpro._get_icons_list_from_collection(collection='national-park-service')
 
-    expect_icons_list = _get_resource_json('icons_list_example_with_collection_appended.json')
-    assert mock_get.call_count == 2
+    expect_icons_list = _get_resource_json('icons_list_example_with_collection_appended.json')*3
+    assert mock_get.call_count == 4
     assert icons_list == expect_icons_list
 
 

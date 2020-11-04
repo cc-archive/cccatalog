@@ -59,15 +59,13 @@ def _get_collections_list(
     while (page <= total_pages):
         query_params = _build_query_param(page=page)
         page += 1
-        json_response_inpydict_form = delayed_requester.get_response_json(
+        json_response = delayed_requester.get_response_json(
             endpoint=(endpoint + "collections"),
             retries=retries,
             query_params=query_params,
         )
 
-        _collections_list = _extract_collections_list_from_json(
-            json_response_inpydict_form
-        )
+        _collections_list = _extract_collections_list_from_json(json_response)
         if _collections_list is None:
             break
         for collection in _collections_list:
@@ -84,17 +82,17 @@ def _build_query_param(page=1):
 
 
 def _extract_collections_list_from_json(
-        json_response_inpydict_form
+        json_response
 ):
     if (
-        json_response_inpydict_form is None
-        or json_response_inpydict_form.get("collections") is None
-        or len(json_response_inpydict_form.get("collections")) == 0
+        json_response is None
+        or json_response.get("collections") is None
+        or len(json_response.get("collections")) == 0
     ):
         collections_list = None
     else:
         collections_list = []
-        _collections_list = json_response_inpydict_form.get("collections")
+        _collections_list = json_response.get("collections")
         for collection in _collections_list:
             collections_list.append(collection.get("slug"))
 
@@ -108,13 +106,13 @@ def _get_icons_list_from_collection(
     auth=AUTH
 ):
     icon_count = get_icon_count(collection=collection)
-    total_pages = _find_no_of_pages_for_specific_collection(icon_count)
+    total_pages = _find_total_pages_for_collection(icon_count)
     icons_list = []
     page = 1
     while (page <= total_pages):
         query_params = _build_query_param(page=page)
         page += 1
-        json_response_inpydict_form = delayed_requester.get_response_json(
+        json_response = delayed_requester.get_response_json(
             # Request is of the form:
             # "http://api.thenounproject.com/collection/{coll_name}/
             # icons?page={page_no}"
@@ -123,9 +121,7 @@ def _get_icons_list_from_collection(
             query_params=query_params,
         )
 
-        _icons_list = _extract_icons_list_from_json(
-            json_response_inpydict_form
-        )
+        _icons_list = _extract_icons_list_from_json(json_response)
         if _icons_list is None:
             break
         for icon in _icons_list:
@@ -139,17 +135,16 @@ def _get_icons_list_from_collection(
         return icons_list
 
 
-def _find_no_of_pages_for_specific_collection(icon_count=None):
-    pages = 1
-    if icon_count is None:
+def _find_total_pages_for_collection(icon_count=None):
+    pages = 0
+    if icon_count is None or icon_count == 0:
         return pages
 
-    n = icon_count / 50
-    if n != 0:
-        pages = int(icon_count//50 + 1)
-    else:
-        pages = int(icon_count/50)
-
+    if icon_count != 0:
+        if icon_count % 50 == 0:
+            return int(icon_count/50)
+        else:
+            return int(icon_count//50 + 1)
     return pages
 
 
@@ -158,28 +153,30 @@ def get_icon_count(
     collection=None
 ):
     icon_count = None
-    json_response_inpydict_form = delayed_requester.get_response_json(
+    if collection is None:
+        return icon_count
+
+    json_response = delayed_requester.get_response_json(
         endpoint=(endpoint + "collection/" + collection),
         retries=3
     )
-    if json_response_inpydict_form:
-        icon_count = json_response_inpydict_form.get("icon_count")
+
+    if json_response:
+        icon_count = json_response.get('collection', {}).get('icon_count')
         return icon_count
     else:
         return icon_count
 
 
-def _extract_icons_list_from_json(
-        json_response_inpydict_form
-):
+def _extract_icons_list_from_json(json_response):
     if (
-        json_response_inpydict_form is None
-        or json_response_inpydict_form.get("icons") is None
-        or len(json_response_inpydict_form.get("icons")) == 0
+        json_response is None
+        or json_response.get("icons") is None
+        or len(json_response.get("icons")) == 0
     ):
         icons_list = None
     else:
-        icons_list = json_response_inpydict_form.get("icons")
+        icons_list = json_response.get("icons")
 
     return icons_list
 
