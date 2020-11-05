@@ -156,8 +156,6 @@ def _create_meta_data_dict(obj, max_description_length=MAX_DESCRIPTION_LENGTH):
         image_meta_data["description"] = " ".join(
             description_text.split(" ")[:MAX_DESCRIPTION_LENGTH]
         )
-    else:
-        image_meta_data["description"] = None
     image_meta_data["views"] = obj.get("views")
     image_meta_data["likes"] = obj.get("likes")
     image_meta_data["pub_date"] = obj.get("published_at")
