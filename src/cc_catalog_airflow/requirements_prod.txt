@@ -41,7 +41,7 @@ idna==2.8
 importlib-metadata==2.0.0
 iso8601==0.1.13
 itsdangerous==1.1.0
-Jinja2==2.10.3
+Jinja2==2.11.3
 jmespath==0.10.0
 json-merge-patch==0.2
 jsonschema==3.2.0
