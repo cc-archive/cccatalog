@@ -89,7 +89,7 @@ tldextract==2.2.2
 typing-extensions==3.7.4.3
 tzlocal==1.5.1
 unicodecsv==0.14.1
-urllib3==1.25.10
+urllib3==1.26.5
 Werkzeug==0.16.1
 WTForms==2.2.1
 zipp==3.3.0
