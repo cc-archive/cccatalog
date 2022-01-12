@@ -1,7 +1,7 @@
 --------
 # Project Transferred
 **This project was transfered to WordPress:**
-> - **[WordPress/openverse-catalog](https://github.com/WordPress/openverse-catalog): Identifies and collects data on cc-licensed content across web crawl data and public apis.**
+- **[WordPress/openverse-catalog](https://github.com/WordPress/openverse-catalog): Identifies and collects data on cc-licensed content across web crawl data and public apis.**
 
 For additional context see:
 - 2020-12-07: [Upcoming Changes to the CC Open Source Community — Creative Commons Open Source](https://opensource.creativecommons.org/blog/entries/2020-12-07-upcoming-changes-to-community/)
